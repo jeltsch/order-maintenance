@@ -40,4 +40,6 @@ Library
     Exposed-Modules: Control.Monad.OT
                      Data.OrderMaintenance
 
+    Other-Modules: Data.OrderMaintenance.Raw
+
     HS-Source-Dirs: src

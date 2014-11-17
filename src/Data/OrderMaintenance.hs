@@ -15,19 +15,41 @@ module Data.OrderMaintenance (
 
 ) where
 
-import Control.Applicative
+-- Control
+
 import Control.Monad.Trans.Cont
+import Control.Monad.ST
+import Control.Concurrent.MVar
+
+-- Data
+
+import Data.OrderMaintenance.Raw
+
+-- System
+
+import System.IO.Unsafe
+
+-- FIXME: We need to implement automatic deletion of elements.
 
 -- * Order computations
 
-data OrderComp o a = OrderComp
--- FIXME: Imlementation to be decided.
+newtype OrderComp o a = OrderComp (Order -> a)
+-- FIXME: Implement OrderCompT, with an inner monad (as Order -> m a).
+{-FIXME:
+    Implement lazy and strict variants of OrderComp (should probably be
+    lazy/strict in the order, that is, the state).
+-}
+
+data Order = Order (RawOrder RealWorld) Lock
+-- NOTE: Evaluation of the Order constructor triggers the I/O for insertions.
 
 finish :: a -> OrderComp o a
-finish = undefined
+finish val = OrderComp (const val)
 
 branch :: OrderComp o a -> OrderComp o b -> OrderComp o (a,b)
-branch = undefined
+branch (OrderComp gen1) (OrderComp gen2) = OrderComp gen where
+
+    gen order = (gen1 order,gen2 order)
 
 {-NOTE:
     It is not possible to implement branches via Applicative. Applicative would
@@ -57,33 +79,77 @@ branch = undefined
 -}
 
 runOrderComp :: (forall o . OrderComp o a) -> a
-runOrderComp = undefined
+runOrderComp (OrderComp gen) = gen emptyOrder
+-- FIXME: This and emptyOrder should be parameterized by the algorithm.
+
+emptyOrder :: Order
+emptyOrder = unsafePerformIO $ do
+    rawOrder <- stToIO newOrder
+    lock <- newLock
+    return (Order rawOrder lock)
+{-FIXME:
+    Introduce the safety measures for unsafePerformIO. It should not matter how
+    many times the I/O is performed.
+-}
 
 -- * Elements
 
-data Element o = Element
--- FIXME: Imlementation to be decided.
+data Element o = Element (RawElement RealWorld) Lock
+-- NOTE: Evaluation of the Element constructor triggers the I/O for insertions.
 
 instance Eq (Element o) where
 
-    elem1 == elem2 = compare elem1 elem2 == EQ
--- FIXME: Maybe, Eq can just be derived.
+    Element rawElem1 _ == Element rawElem2 _ = rawElem1 == rawElem2
+{-FIXME:
+    This assumes that raw elements are references. At the moment, this cannot be
+    generally assumed.
+-}
 
 instance Ord (Element o) where
 
-    compare = undefined
+    compare (Element rawElem1 lock) (Element rawElem2 _) = ordering where
+    
+        ordering = unsafePerformIO $
+                   criticalSection lock $
+                   stToIO $ compareElements rawElem1 rawElem2
+{-FIXME:
+    Introduce the safety measures for unsafePerformIO. It should not matter how
+    many times the I/O is performed.
+-}
+
+fromInsert :: (RawOrder RealWorld -> ST RealWorld (RawElement RealWorld))
+           -> (Element o -> OrderComp o a) -> OrderComp o a
+fromInsert insert cont = OrderComp gen where
+
+    gen order = let
+
+                    (elem,order') = explicitStateInsert order
+
+                    OrderComp contGen = cont elem
+
+                in contGen order'
+
+    explicitStateInsert order@(Order rawOrder lock) = unsafePerformIO $
+        criticalSection lock $
+        do
+            rawElem <- stToIO $ insert rawOrder
+            return (Element rawElem lock,order)
+{-FIXME:
+    Introduce the safety measures for unsafePerformIO. The I/O must occur only
+    once.
+-}
 
 withNewMinimum :: (Element o -> OrderComp o a) -> OrderComp o a
-withNewMinimum = undefined
+withNewMinimum = fromInsert insertMinimum
 
 withNewMaximum :: (Element o -> OrderComp o a) -> OrderComp o a
-withNewMaximum = undefined
+withNewMaximum = fromInsert insertMaximum
 
 withNewAfter :: Element o -> (Element o -> OrderComp o a) -> OrderComp o a
-withNewAfter = undefined
+withNewAfter (~(Element rawElem _)) = fromInsert (insertAfter rawElem)
 
 withNewBefore :: Element o -> (Element o -> OrderComp o a) -> OrderComp o a
-withNewBefore = undefined
+withNewBefore (~(Element rawElem _)) = fromInsert (insertBefore rawElem)
 
 {-FIXME:
     The actual implementation has explicit deletions and uses the ST monad. It
@@ -116,3 +182,17 @@ withNewBefore = undefined
 
     Hopefully, we can derive a run operation for T from runOT.
 -}
+
+-- * Locks
+
+type Lock = MVar ()
+
+newLock :: IO Lock
+newLock = newEmptyMVar
+
+criticalSection :: Lock -> IO a -> IO a
+criticalSection lock act = do
+    putMVar lock ()
+    val <- act
+    takeMVar lock
+    return val

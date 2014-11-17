@@ -1,11 +1,11 @@
 module Control.Monad.OT (
 
     OT (OT, unOT),
+    runOT,
     insertMinimum,
     insertMaximum,
     insertAfter,
-    insertBefore,
-    runOT
+    insertBefore
 
 ) where
 
@@ -17,27 +17,35 @@ import Control.Monad.Trans.Cont
 -- * Data
 import Data.OrderMaintenance
 
+-- * Order threads
+
 newtype OT o a = OT { unOT :: forall r . Cont (OrderComp o r) a }
 
 instance Functor (OT o) where
 
-    fmap = liftA
+    fmap fun (OT cont) = OT (fmap fun cont)
 
 instance Applicative (OT o) where
 
-    pure = return
+    pure val = OT (pure val)
 
-    (<*>) = ap
+    OT funCont <*> OT argCont = OT (funCont <*> argCont)
 
 instance Monad (OT o) where
 
-    return val1 = OT (return val1)
+    return val = OT (return val)
 
     OT cont1 >>= ot2Gen = OT $ cont1 >>= \ val1 -> let
 
                                                        OT cont2 = ot2Gen val1
                                                        
                                                    in cont2
+
+toOrderComp :: OT o a -> OrderComp o a
+toOrderComp (OT cont) = runCont cont finish
+
+runOT :: (forall o . OT o a) -> a
+runOT ot = runOrderComp (toOrderComp ot)
 
 insertMinimum :: OT o (Element o)
 insertMinimum = OT $ cont withNewMinimum
@@ -50,9 +58,6 @@ insertAfter refElem = OT $ cont (withNewAfter refElem)
 
 insertBefore :: Element o -> OT o (Element o)
 insertBefore refElem = OT $ cont (withNewAfter refElem)
-
-runOT :: (forall o . OT o a) -> a
-runOT ot = runOrderComp (runCont (unOT ot) finish)
 
 {-NOTE:
     OT o is a monad. As a result, it is also an applicative functor, but one
