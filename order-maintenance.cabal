@@ -29,7 +29,7 @@ Source-Repository this
 Library
 
     Build-Depends: base         >= 3.0 && < 5,
-                   transformers >= 0.3 && < 0.4
+                   transformers >= 0.3 && < 0.5
 
     Extensions: Rank2Types
 
