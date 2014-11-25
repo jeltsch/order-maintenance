@@ -16,9 +16,13 @@ module Data.OrderMaintenance (
     -- * Elements
     Element,
     withNewMinimum,
+    withNewMinimum',
     withNewMaximum,
+    withNewMaximum',
     withNewAfter,
-    withNewBefore
+    withNewAfter',
+    withNewBefore,
+    withNewBefore'
 
 ) where
 
@@ -55,10 +59,6 @@ evalOrderComp comp = runIdentity (evalOrderCompT comp)
 -- * Order computations with an inner monad
 
 newtype OrderCompT o m a = OrderCompT (Order -> m a)
-{-FIXME:
-    Implement lazy and strict variants of OrderComp (should probably be
-    lazy/strict in the order, that is, the state).
--}
 
 data Order = Order (RawOrder RealWorld) Lock
 -- NOTE: Evaluation of the Order constructor triggers the I/O for insertions.
@@ -148,23 +148,36 @@ instance Ord (Element o) where
     many times the I/O is performed.
 -}
 
-fromInsert :: (RawOrder RealWorld -> ST RealWorld (RawElement RealWorld))
-           -> (Element o -> OrderCompT o m a) -> OrderCompT o m a
+type Insert = RawOrder RealWorld -> ST RealWorld (RawElement RealWorld)
+
+fromInsert :: Insert -> (Element o -> OrderCompT o m a) -> OrderCompT o m a
 fromInsert insert cont = OrderCompT gen where
 
     gen order = let
 
-                    (elem,order') = explicitStateInsert order
+                    (elem,order') = explicitStateInsert insert order
 
                     OrderCompT contGen = cont elem
 
                 in contGen order'
 
-    explicitStateInsert order@(Order rawOrder lock) = unsafePerformIO $
-        criticalSection lock $
-        do
-            rawElem <- stToIO $ insert rawOrder
-            return (Element rawElem lock,order)
+fromInsert' :: Insert -> (Element o -> OrderCompT o m a) -> OrderCompT o m a
+fromInsert' insert cont = OrderCompT gen where
+
+    gen order = case explicitStateInsert insert order of
+
+                    (elem,order') -> let
+
+                                         OrderCompT contGen = cont elem
+
+                                     in contGen order'
+
+explicitStateInsert :: Insert -> Order -> (Element o,Order)
+explicitStateInsert insert order@(Order rawOrder lock) = unsafePerformIO $
+    criticalSection lock $
+    do
+        rawElem <- stToIO $ insert rawOrder
+        return (Element rawElem lock,order)
 {-FIXME:
     Introduce the safety measures for unsafePerformIO. The I/O must occur only
     once.
@@ -174,19 +187,37 @@ withNewMinimum :: (Element o -> OrderCompT o m a)
                -> OrderCompT o m a
 withNewMinimum = fromInsert insertMinimum
 
+withNewMinimum' :: (Element o -> OrderCompT o m a)
+                -> OrderCompT o m a
+withNewMinimum' = fromInsert' insertMinimum
+
 withNewMaximum :: (Element o -> OrderCompT o m a)
                -> OrderCompT o m a
 withNewMaximum = fromInsert insertMaximum
+
+withNewMaximum' :: (Element o -> OrderCompT o m a)
+                -> OrderCompT o m a
+withNewMaximum' = fromInsert' insertMaximum
 
 withNewAfter :: Element o
              -> (Element o -> OrderCompT o m a)
              -> OrderCompT o m a
 withNewAfter (~(Element rawElem _)) = fromInsert (insertAfter rawElem)
 
+withNewAfter' :: Element o
+              -> (Element o -> OrderCompT o m a)
+              -> OrderCompT o m a
+withNewAfter' (~(Element rawElem _)) = fromInsert' (insertAfter rawElem)
+
 withNewBefore :: Element o
               -> (Element o -> OrderCompT o m a)
               -> OrderCompT o m a
 withNewBefore (~(Element rawElem _)) = fromInsert (insertBefore rawElem)
+
+withNewBefore' :: Element o
+               -> (Element o -> OrderCompT o m a)
+               -> OrderCompT o m a
+withNewBefore' (~(Element rawElem _)) = fromInsert' (insertBefore rawElem)
 
 {-FIXME:
     The actual implementation has explicit deletions and uses the ST monad. It
