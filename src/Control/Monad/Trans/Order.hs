@@ -26,6 +26,7 @@ import Control.Monad.IO.Class
 
 -- Data
 
+import Data.Monoid
 import Data.Functor.Identity
 import Data.OrderMaintenance
 
@@ -67,12 +68,40 @@ instance Monad (OrderT o m) where
                                                        
                                                   in cont2
 
+instance Alternative m => Alternative (OrderT o m) where
+
+    empty = OrderT $ cont (\ _ -> mempty)
+
+    OrderT cont1 <|> OrderT cont2 = OrderT $
+                                    cont $
+                                    \ cont -> mappend (runCont cont1 cont)
+                                                      (runCont cont2 cont)
+
+instance Alternative m => MonadPlus (OrderT o m) where
+
+    mzero = empty
+
+    mplus = (<|>)
+
 {-FIXME:
-    Implement also instances of Alternative and MonadPlus. These cannot be taken
-    from the underlying Cont, as it does not have such instances. However, it
-    should be possible to define operations on orderCompT based on
-    composeOrderCompT similarly to defining finish and branch, and then use
-    these operations to define the monoidal structure of OrderT.
+    Interestingly, there are no instances of Alternative and MonadPlus for
+    ContT, although they could be constructed in an analogous way. Is there any
+    good reason for this? If yes, then it is maybe not a good idea to have the
+    above Alternative and MonadPlus instances for OrderT.
+
+    Note that in the case of ContT, lift would only be coherent with the monoid
+    structure of MonadPlus if the underlying monad fulfills the following
+    equations:
+
+        mzero           >>= _ = mzero
+
+        (m1 `mplus` m2) >>= m = (m1 >>= m) `mplus` (m2 >>= m)
+
+    The first of them is stated as necessary in Control.Monad, but
+    interestingly, the second is not.
+
+    What are the requirements for the inner monad of OrderT in order for the
+    above Alternative and MonadPlus instances to be sane?
 -}
 
 {-FIXME:
