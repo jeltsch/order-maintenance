@@ -2,6 +2,7 @@ module Data.OrderMaintenance (
 
     -- * Order computations
     OrderComp,
+    compose,
     finish,
     branch,
     runOrderComp,
@@ -43,13 +44,14 @@ newtype OrderComp o a = OrderComp (Order -> a)
 data Order = Order (RawOrder RealWorld) Lock
 -- NOTE: Evaluation of the Order constructor triggers the I/O for insertions.
 
+compose :: ((forall a . OrderComp o a -> a) -> b) -> OrderComp o b
+compose build = OrderComp $ \ order -> build (\ (OrderComp gen) -> gen order)
+
 finish :: a -> OrderComp o a
-finish val = OrderComp (const val)
+finish val = compose (\ _ -> val)
 
 branch :: OrderComp o a -> OrderComp o b -> OrderComp o (a,b)
-branch (OrderComp gen1) (OrderComp gen2) = OrderComp gen where
-
-    gen order = (gen1 order,gen2 order)
+branch comp1 comp2 = compose (\ eval -> (eval comp1,eval comp2))
 
 {-NOTE:
     It is not possible to implement branches via Applicative. Applicative would
