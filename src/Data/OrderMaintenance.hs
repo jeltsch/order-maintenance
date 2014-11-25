@@ -54,7 +54,9 @@ composeOrderComp build = composeOrderCompT $
 
 evalOrderComp :: (forall o . OrderComp o a) -> a
 evalOrderComp comp = runIdentity (evalOrderCompT comp)
--- FIXME: This should be parameterized by the algorithm.
+{-FIXME:
+    We should also have a function evalOrderCompWith that takes an algorithm.
+-}
 
 -- * Order computations with an inner monad
 
@@ -111,7 +113,11 @@ withOutputOf monad cont = composeOrderCompT $
 
 evalOrderCompT :: (forall o . OrderCompT o m a) -> m a
 evalOrderCompT (OrderCompT gen) = gen emptyOrder
--- FIXME: This and emptyOrder should be parameterized by the algorithm.
+{-FIXME:
+    We should also have a function evalOrderCompTWith that takes an algorithm.
+    The function evalOrderCompT above should then be implemented in terms of
+    evalOrderCompTWith and a variable defaultAlgorithm.
+-}
 
 emptyOrder :: Order
 emptyOrder = unsafePerformIO $ do
@@ -122,6 +128,7 @@ emptyOrder = unsafePerformIO $ do
     Introduce the safety measures for unsafePerformIO. It should not matter how
     many times the I/O is performed.
 -}
+-- FIXME: Maybe emptyOrder must be parameterized by an algorithm.
 
 -- * Elements
 
