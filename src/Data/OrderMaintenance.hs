@@ -2,10 +2,16 @@ module Data.OrderMaintenance (
 
     -- * Order computations
     OrderComp,
-    compose,
+    composeOrderComp,
+    evalOrderComp,
+
+    -- * Order computations with an inner monad
+    OrderCompT,
+    composeOrderCompT,
     finish,
     branch,
-    evalOrderComp,
+    withOutputOf,
+    evalOrderCompT,
 
     -- * Elements
     Element,
@@ -18,12 +24,14 @@ module Data.OrderMaintenance (
 
 -- Control
 
+import Control.Applicative
 import Control.Monad.Trans.Cont
 import Control.Monad.ST
 import Control.Concurrent.MVar
 
 -- Data
 
+import Data.Functor.Identity
 import Data.OrderMaintenance.Raw
 
 -- System
@@ -34,8 +42,19 @@ import System.IO.Unsafe
 
 -- * Order computations
 
-newtype OrderComp o a = OrderComp (Order -> a)
--- FIXME: Implement OrderCompT, with an inner monad (as Order -> m a).
+type OrderComp o = OrderCompT o Identity
+
+composeOrderComp :: ((forall a . OrderComp o a -> a) -> b) -> OrderComp o b
+composeOrderComp build = composeOrderCompT $
+                         \ eval' -> Identity $ build (runIdentity . eval')
+
+evalOrderComp :: (forall o . OrderComp o a) -> a
+evalOrderComp comp = runIdentity (evalOrderCompT comp)
+-- FIXME: This should be parameterized by the algorithm.
+
+-- * Order computations with an inner monad
+
+newtype OrderCompT o m a = OrderCompT (Order -> m a)
 {-FIXME:
     Implement lazy and strict variants of OrderComp (should probably be
     lazy/strict in the order, that is, the state).
@@ -44,14 +63,24 @@ newtype OrderComp o a = OrderComp (Order -> a)
 data Order = Order (RawOrder RealWorld) Lock
 -- NOTE: Evaluation of the Order constructor triggers the I/O for insertions.
 
-compose :: ((forall a . OrderComp o a -> a) -> b) -> OrderComp o b
-compose build = OrderComp $ \ order -> build (\ (OrderComp gen) -> gen order)
+composeOrderCompT :: ((forall a . OrderCompT o m a -> m a) -> m b)
+                  -> OrderCompT o m b
+composeOrderCompT build = OrderCompT gen where
 
-finish :: a -> OrderComp o a
-finish val = compose (\ _ -> val)
+    gen order = build (\ (OrderCompT gen) -> gen order)
 
-branch :: OrderComp o a -> OrderComp o b -> OrderComp o (a,b)
-branch comp1 comp2 = compose (\ eval -> (eval comp1,eval comp2))
+finish :: Applicative m => a -> OrderCompT o m a
+finish val = composeOrderCompT $
+             \ _ -> pure val
+
+branch :: Applicative m =>
+          OrderCompT o m a -> OrderCompT o m b -> OrderCompT o m (a,b)
+branch comp1 comp2 = composeOrderCompT $
+                     \ eval -> liftA2 (,) (eval comp1) (eval comp2)
+
+withOutputOf :: Monad m => m a -> (a -> OrderCompT o m b) -> OrderCompT o m b
+withOutputOf monad cont = composeOrderCompT $
+                          \ eval -> monad >>= eval . cont
 
 {-NOTE:
     It is not possible to implement branches via Applicative. Applicative would
@@ -80,8 +109,8 @@ branch comp1 comp2 = compose (\ eval -> (eval comp1,eval comp2))
     similar argument holds for time complexity.
 -}
 
-evalOrderComp :: (forall o . OrderComp o a) -> a
-evalOrderComp (OrderComp gen) = gen emptyOrder
+evalOrderCompT :: (forall o . OrderCompT o m a) -> m a
+evalOrderCompT (OrderCompT gen) = gen emptyOrder
 -- FIXME: This and emptyOrder should be parameterized by the algorithm.
 
 emptyOrder :: Order
@@ -120,14 +149,14 @@ instance Ord (Element o) where
 -}
 
 fromInsert :: (RawOrder RealWorld -> ST RealWorld (RawElement RealWorld))
-           -> (Element o -> OrderComp o a) -> OrderComp o a
-fromInsert insert cont = OrderComp gen where
+           -> (Element o -> OrderCompT o m a) -> OrderCompT o m a
+fromInsert insert cont = OrderCompT gen where
 
     gen order = let
 
                     (elem,order') = explicitStateInsert order
 
-                    OrderComp contGen = cont elem
+                    OrderCompT contGen = cont elem
 
                 in contGen order'
 
@@ -141,16 +170,22 @@ fromInsert insert cont = OrderComp gen where
     once.
 -}
 
-withNewMinimum :: (Element o -> OrderComp o a) -> OrderComp o a
+withNewMinimum :: (Element o -> OrderCompT o m a)
+               -> OrderCompT o m a
 withNewMinimum = fromInsert insertMinimum
 
-withNewMaximum :: (Element o -> OrderComp o a) -> OrderComp o a
+withNewMaximum :: (Element o -> OrderCompT o m a)
+               -> OrderCompT o m a
 withNewMaximum = fromInsert insertMaximum
 
-withNewAfter :: Element o -> (Element o -> OrderComp o a) -> OrderComp o a
+withNewAfter :: Element o
+             -> (Element o -> OrderCompT o m a)
+             -> OrderCompT o m a
 withNewAfter (~(Element rawElem _)) = fromInsert (insertAfter rawElem)
 
-withNewBefore :: Element o -> (Element o -> OrderComp o a) -> OrderComp o a
+withNewBefore :: Element o
+              -> (Element o -> OrderCompT o m a)
+              -> OrderCompT o m a
 withNewBefore (~(Element rawElem _)) = fromInsert (insertBefore rawElem)
 
 {-FIXME:
