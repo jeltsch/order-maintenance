@@ -19,7 +19,9 @@ module Control.Monad.Trans.Order (
 -- * Control
 import Control.Applicative
 import Control.Monad
+import Control.Monad.Trans.Class
 import Control.Monad.Trans.Cont
+import Control.Monad.IO.Class
 
 -- * Data
 import Data.Functor.Identity
@@ -56,6 +58,14 @@ instance Monad (OrderT o m) where
                                                       OrderT cont2 = ot2Gen val1
                                                        
                                                   in cont2
+
+instance MonadTrans (OrderT o) where
+
+    lift monad = OrderT $ cont (withOutputOf monad)
+
+instance MonadIO m => MonadIO (OrderT o m) where
+
+    liftIO = lift . liftIO
 
 runOrderT :: OrderT o m a -> Cont (OrderCompT o m r) a
 runOrderT (OrderT cont) = cont
