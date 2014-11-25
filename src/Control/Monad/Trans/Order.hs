@@ -27,6 +27,12 @@ import Control.Monad.IO.Class
 import Data.Functor.Identity
 import Data.OrderMaintenance
 
+{-FIXME:
+    We have to also introduce a strict variant of Order and OrderT. The strict
+    and lazy variants should go into respective submodules, and this submodule
+    should re-export the lazy submodule, analogously to RWS, State, and Writer.
+-}
+
 -- * The Order monad
 
 type Order o = OrderT o Identity
