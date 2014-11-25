@@ -38,23 +38,24 @@ newtype OrderT o m a = OrderT (forall r . Cont (OrderCompT o m r) a)
 
 instance Functor (OrderT o m) where
 
-    fmap fun (OrderT cont) = OrderT (fmap fun cont)
+    fmap fun (OrderT cont) = OrderT $ fmap fun cont
 
 instance Applicative (OrderT o m) where
 
     pure val = OrderT (pure val)
 
-    OrderT funCont <*> OrderT argCont = OrderT (funCont <*> argCont)
+    OrderT funCont <*> OrderT argCont = OrderT $ funCont <*> argCont
 
 instance Monad (OrderT o m) where
 
-    return val = OrderT (return val)
+    return val = OrderT $ return val
 
-    OrderT cont1 >>= ot2Gen = OrderT $ cont1 >>= \ val1 -> let
+    OrderT cont1 >>= ot2Gen = OrderT $
+                              cont1 >>= \ val1 -> let
 
-                                                       OrderT cont2 = ot2Gen val1
+                                                      OrderT cont2 = ot2Gen val1
                                                        
-                                                   in cont2
+                                                  in cont2
 
 runOrderT :: OrderT o m a -> Cont (OrderCompT o m r) a
 runOrderT (OrderT cont) = cont
