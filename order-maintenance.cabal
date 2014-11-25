@@ -37,7 +37,7 @@ Library
         Extensions: AutoDeriveTypeable
     }
 
-    Exposed-Modules: Control.Monad.OT
+    Exposed-Modules: Control.Monad.Trans.Order
                      Data.OrderMaintenance
 
     Other-Modules: Data.OrderMaintenance.Raw
