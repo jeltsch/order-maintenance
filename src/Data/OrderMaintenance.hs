@@ -35,6 +35,7 @@ import Control.Concurrent.MVar
 
 -- Data
 
+import Data.Monoid
 import Data.Functor.Identity
 import Data.OrderMaintenance.Raw
 
@@ -61,6 +62,14 @@ evalOrderComp comp = runIdentity (evalOrderCompT comp)
 -- * Order computations with an inner monad
 
 newtype OrderCompT o m a = OrderCompT (Order -> m a)
+
+instance Alternative m => Monoid (OrderCompT o m a) where
+
+    mempty = composeOrderCompT $
+             \ _ -> empty
+
+    comp1 `mappend` comp2 = composeOrderCompT $
+                            \ eval -> eval comp1 <|> eval comp2
 
 data Order = Order (RawOrder RealWorld) Lock
 -- NOTE: Evaluation of the Order constructor triggers the I/O for insertions.
