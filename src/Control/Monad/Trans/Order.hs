@@ -59,6 +59,19 @@ instance Monad (OrderT o m) where
                                                        
                                                   in cont2
 
+{-FIXME:
+    Implement also instances of Alternative and MonadPlus. These cannot be taken
+    from the underlying Cont, as it does not have such instances. However, it
+    should be possible to define operations on orderCompT based on
+    composeOrderCompT similarly to defining finish and branch, and then use
+    these operations to define the monoidal structure of OrderT.
+-}
+
+{-FIXME:
+    Can we also have a MonadFix instance? ContT does not have any, but maybe
+    OrderT is special enough to allow for one.
+-}
+
 instance MonadTrans (OrderT o) where
 
     lift monad = OrderT $ cont (withOutputOf monad)
