@@ -98,10 +98,22 @@ instance Alternative m => MonadPlus (OrderT o m) where
         (m1 `mplus` m2) >>= m = (m1 >>= m) `mplus` (m2 >>= m)
 
     The first of them is stated as necessary in Control.Monad, but
-    interestingly, the second is not.
+    interestingly, the second is not. Both are actually distributivity laws
+    (where (>>=) is similar to × and the monoid structure is similar to
+    0 and +). There are also variants of these laws with essentially the sides
+    of (>>=) swapped.
 
     What are the requirements for the inner monad of OrderT in order for the
     above Alternative and MonadPlus instances to be sane?
+
+    Note that the monoid structure must also be coherent with (>>=) in ContT and
+    OrderT. For ContT, this is not the case for the swapped variants, because
+    the function that represents a ContT value is not necessarily coherent with
+    the monoidal structure. In the case of OrderT, we might be lucky though.
+
+    If we can really have Alternative and MonadPlus instances for OrderT, then
+    OrderT allows for a limited form of branching, although we thought before
+    that only OrderCompT allows for branching at all.
 -}
 
 {-FIXME:
