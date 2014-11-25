@@ -5,7 +5,7 @@ module Data.OrderMaintenance (
     compose,
     finish,
     branch,
-    runOrderComp,
+    evalOrderComp,
 
     -- * Elements
     Element,
@@ -80,8 +80,8 @@ branch comp1 comp2 = compose (\ eval -> (eval comp1,eval comp2))
     similar argument holds for time complexity.
 -}
 
-runOrderComp :: (forall o . OrderComp o a) -> a
-runOrderComp (OrderComp gen) = gen emptyOrder
+evalOrderComp :: (forall o . OrderComp o a) -> a
+evalOrderComp (OrderComp gen) = gen emptyOrder
 -- FIXME: This and emptyOrder should be parameterized by the algorithm.
 
 emptyOrder :: Order

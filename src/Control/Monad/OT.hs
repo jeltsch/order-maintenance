@@ -1,7 +1,7 @@
 module Control.Monad.OT (
 
     OT (OT, unOT),
-    runOT,
+    evalOT,
     insertMinimum,
     insertMaximum,
     insertAfter,
@@ -44,8 +44,8 @@ instance Monad (OT o) where
 toOrderComp :: OT o a -> OrderComp o a
 toOrderComp (OT cont) = runCont cont finish
 
-runOT :: (forall o . OT o a) -> a
-runOT ot = runOrderComp (toOrderComp ot)
+evalOT :: (forall o . OT o a) -> a
+evalOT ot = evalOrderComp (toOrderComp ot)
 
 insertMinimum :: OT o (Element o)
 insertMinimum = OT $ cont withNewMinimum
