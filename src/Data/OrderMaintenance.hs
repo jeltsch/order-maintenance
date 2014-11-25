@@ -160,12 +160,6 @@ withNewBefore (~(Element rawElem _)) = fromInsert (insertBefore rawElem)
     computation into an IO computation using RealWorld. STRefs that internally
     serve as elements become IORefs.
 
-    The ST computation receives a stream of commands that include ST-based
-    continuations for returning results. When we finally instantiate o to
-    RealWorld, these continuations actually become IO-based and can just store
-    the result in an MVar. The outer shell of the order maintenance module
-    creates these MVars and fetches the results from them.
-
     Should we use lazy or strict ST? Since we turn the ST computation into an IO
     computation, it seems sensible to use strict ST. If we need to form a fixed
     point, however, it might be necessary to form this fixed point in lazy ST.
