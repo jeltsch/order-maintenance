@@ -1,6 +1,7 @@
 module Control.Monad.OT (
 
-    OT (OT, unOT),
+    OT (OT),
+    runOT,
     evalOT,
     insertMinimum,
     insertMaximum,
@@ -19,7 +20,7 @@ import Data.OrderMaintenance
 
 -- * Order threads
 
-newtype OT o a = OT { unOT :: forall r . Cont (OrderComp o r) a }
+newtype OT o a = OT (forall r . Cont (OrderComp o r) a)
 
 instance Functor (OT o) where
 
@@ -40,6 +41,9 @@ instance Monad (OT o) where
                                                        OT cont2 = ot2Gen val1
                                                        
                                                    in cont2
+
+runOT :: OT o a -> Cont (OrderComp o r) a
+runOT (OT cont) = cont
 
 toOrderComp :: OT o a -> OrderComp o a
 toOrderComp (OT cont) = runCont cont finish
