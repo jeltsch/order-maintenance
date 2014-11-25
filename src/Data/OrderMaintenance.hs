@@ -233,18 +233,6 @@ withNewBefore' (~(Element rawElem _)) = fromInsert' (insertBefore rawElem)
     point, however, it might be necessary to form this fixed point in lazy ST.
 -}
 
-{-FIXME:
-    Implement the Trans type based on any t which has a run operation of type
-    forall s . t s a -> a and which has the property that for every s, t s is a
-    monad. This then includes ST and OT.
-
-    For incremental sorting, use a type T defined by
-
-        T s = StateT AdditionalState (OT s)  .
-
-    Hopefully, we can derive a run operation for T from runOT.
--}
-
 -- * Locks
 
 type Lock = MVar ()
