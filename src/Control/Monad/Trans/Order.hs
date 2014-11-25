@@ -16,14 +16,16 @@ module Control.Monad.Trans.Order (
 
 ) where
 
--- * Control
+-- Control
+
 import Control.Applicative
 import Control.Monad
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Cont
 import Control.Monad.IO.Class
 
--- * Data
+-- Data
+
 import Data.Functor.Identity
 import Data.OrderMaintenance
 
