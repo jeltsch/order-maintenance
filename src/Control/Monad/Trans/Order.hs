@@ -65,7 +65,7 @@ instance Monad (OrderT o m) where
                               cont1 >>= \ val1 -> let
 
                                                       OrderT cont2 = ot2Gen val1
-                                                       
+
                                                   in cont2
 
 instance Alternative m => Alternative (OrderT o m) where
