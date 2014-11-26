@@ -31,9 +31,15 @@ import Data.Functor.Identity
 import Data.OrderMaintenance
 
 {-FIXME:
-    We have to also introduce a strict variant of Order and OrderT. The strict
-    and lazy variants should go into respective submodules, and this submodule
-    should re-export the lazy submodule, analogously to RWS, State, and Writer.
+    For WriterT, StateT, and RWST, there are strict and lazy variants. They
+    differ in how (>>=) is implemented. ReaderT is always lazy, and ContT is
+    always strict. As a result of the latter, there is no strict and lazy
+    variant of OrderT, but OrderT is always a strict monad in the sense of the
+    Control.Monad.Trans.Class documentation.
+
+    We should distinguish between lazy and strict versions of the insert
+    operations. Is this about strictness in the order? Is there actually a
+    difference, given that ContT is always strict?
 -}
 
 -- * The Order monad
