@@ -68,52 +68,31 @@ instance Monad (OrderT o m) where
 
                                                   in cont2
 
-instance Alternative m => Alternative (OrderT o m) where
-
-    empty = OrderT $ cont (\ _ -> mempty)
-
-    OrderT cont1 <|> OrderT cont2 = OrderT $
-                                    cont $
-                                    \ cont -> mappend (runCont cont1 cont)
-                                                      (runCont cont2 cont)
-
-instance Alternative m => MonadPlus (OrderT o m) where
-
-    mzero = empty
-
-    mplus = (<|>)
-
 {-FIXME:
-    Interestingly, there are no instances of Alternative and MonadPlus for
-    ContT, although they could be constructed in an analogous way. Is there any
-    good reason for this? If yes, then it is maybe not a good idea to have the
-    above Alternative and MonadPlus instances for OrderT.
+    A type-correct MonadPlus instance could be constructed for ContT if the
+    inner monad is an instance of MonadPlus. However, this instance would not
+    fulfill the law
 
-    Note that in the case of ContT, lift would only be coherent with the monoid
-    structure of MonadPlus if the underlying monad fulfills the following
-    equations:
+        _ >> mzero = mzero
 
-        mzero           >>= _ = mzero
+    in general. It would do so only if the first argument of (>>) was a CPS
+    computation that “respects mzero“ in the sense that applying this CPS
+    computation to the continuation const mzero yielded mzero.
 
-        (m1 `mplus` m2) >>= m = (m1 >>= m) `mplus` (m2 >>= m)
+    The case for OrderT is similar. A type-correct MonadPlus instance could be
+    constructed in terms of the OrderCompT Monoid instance. However, it would
+    fulfill the above law only if applying the first argument of (>>) to the
+    continuation const mempty yielded mempty. This is not always the case,
+    though. A counterexample is the following CPS:
 
-    The first of them is stated as necessary in Control.Monad, but
-    interestingly, the second is not. Both are actually distributivity laws
-    (where (>>=) is similar to × and the monoid structure is similar to
-    0 and +). There are also variants of these laws with essentially the sides
-    of (>>=) swapped.
+        type SpecificComp = OrderCompT o (MaybeT (Writer [()]))
 
-    What are the requirements for the inner monad of OrderT in order for the
-    above Alternative and MonadPlus instances to be sane?
+        cps :: (a -> SpecificComp r) -> SpecificComp r
+        cps _ = withOutputOf (MaybeT (writer (Nothing,[()]))) finish
 
-    Note that the monoid structure must also be coherent with (>>=) in ContT and
-    OrderT. For ContT, this is not the case for the swapped variants, because
-    the function that represents a ContT value is not necessarily coherent with
-    the monoidal structure. In the case of OrderT, we might be lucky though.
+    Note that the mempty of SpecificComp r is as follows:
 
-    If we can really have Alternative and MonadPlus instances for OrderT, then
-    OrderT allows for a limited form of branching, although we thought before
-    that only OrderCompT allows for branching at all.
+        withOutputOf (MaybeT (writer (Nothing,[]))) finish
 -}
 
 {-FIXME:
