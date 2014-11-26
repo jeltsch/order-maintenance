@@ -96,7 +96,7 @@ instance Monad (OrderT o m) where
 -}
 
 {-FIXME:
-    OrderT probably cannot be an instance of MonadFix? ContT is not either.
+    OrderT probably cannot be an instance of MonadFix. ContT is not either.
     However, see the the discussion at <http://tinyurl.com/p5az2km>.
 -}
 
