@@ -96,8 +96,8 @@ instance Monad (OrderT o m) where
 -}
 
 {-FIXME:
-    Can we also have a MonadFix instance? ContT does not have any, but maybe
-    OrderT is special enough to allow for one.
+    OrderT probably cannot be an instance of MonadFix? ContT is not either.
+    However, see the the discussion at <http://tinyurl.com/p5az2km>.
 -}
 
 instance MonadTrans (OrderT o) where
