@@ -40,6 +40,13 @@ import Data.OrderMaintenance
     We should distinguish between lazy and strict versions of the insert
     operations. Is this about strictness in the order? Is there actually a
     difference, given that ContT is always strict?
+
+    Maybe we do not even need lazy and strict versions of the insert operations,
+    also not of the primitive ones for OrderCompT. It might be enough to have a
+    operation that forces the order. For OrderT, this would be analogous to the
+    operation get >>= \ s -> s `seq` () for StateT. For OrderCompT, this
+    operation would probably have the type OrderCompT -> OrderCompT and be
+    implemented as ($!).
 -}
 
 -- * The Order monad
