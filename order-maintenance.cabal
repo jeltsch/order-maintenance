@@ -32,7 +32,7 @@ Library
     Build-Depends: base         >= 3.0 && < 5,
                    transformers >= 0.3 && < 0.5
 
-    Extensions: Rank2Types
+    Extensions: RankNTypes
 
     if impl(ghc >= 7.8) {
         Extensions: AutoDeriveTypeable
