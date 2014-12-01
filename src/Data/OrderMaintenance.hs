@@ -11,18 +11,15 @@ module Data.OrderMaintenance (
     finish,
     branch,
     withOutputOf,
+    withForcedOrder,
     evalOrderCompT,
 
     -- * Elements
     Element,
     withNewMinimum,
-    withNewMinimum',
     withNewMaximum,
-    withNewMaximum',
     withNewAfter,
-    withNewAfter',
-    withNewBefore,
-    withNewBefore'
+    withNewBefore
 
 ) where
 
@@ -125,6 +122,9 @@ withOutputOf monad cont = composeOrderCompT $
     similar argument holds for time complexity.
 -}
 
+withForcedOrder :: OrderCompT o m a -> OrderCompT o m a
+withForcedOrder (OrderCompT gen) = OrderCompT (gen $!)
+
 evalOrderCompT :: (forall o . OrderCompT o m a) -> m a
 evalOrderCompT (OrderCompT gen) = gen emptyOrder
 {-FIXME:
@@ -169,76 +169,46 @@ instance Ord (Element o) where
     many times the I/O is performed.
 -}
 
-type Insert = RawOrder RealWorld -> ST RealWorld (RawElement RealWorld)
-
-fromInsert :: Insert -> (Element o -> OrderCompT o m a) -> OrderCompT o m a
+fromInsert :: (RawOrder RealWorld -> ST RealWorld (RawElement RealWorld))
+           -> (Element o -> OrderCompT o m a)
+           -> OrderCompT o m a
 fromInsert insert cont = OrderCompT gen where
 
     gen order = let
 
-                    (elem,order') = explicitStateInsert insert order
+                    (elem,order') = explicitStateInsert order
 
                     OrderCompT contGen = cont elem
 
                 in contGen order'
 
-fromInsert' :: Insert -> (Element o -> OrderCompT o m a) -> OrderCompT o m a
-fromInsert' insert cont = OrderCompT gen where
-
-    gen order = case explicitStateInsert insert order of
-
-                    (elem,order') -> let
-
-                                         OrderCompT contGen = cont elem
-
-                                     in contGen order'
-
-explicitStateInsert :: Insert -> Order -> (Element o,Order)
-explicitStateInsert insert order@(Order rawOrder lock) = unsafePerformIO $
-    criticalSection lock $
-    do
-        rawElem <- stToIO $ insert rawOrder
-        return (Element rawElem lock,order)
-{-FIXME:
-    Introduce the safety measures for unsafePerformIO. The I/O must occur only
-    once.
--}
+    explicitStateInsert order@(Order rawOrder lock) = unsafePerformIO $
+        criticalSection lock $
+        do
+            rawElem <- stToIO $ insert rawOrder
+            return (Element rawElem lock,order)
+    {-FIXME:
+        Introduce the safety measures for unsafePerformIO. The I/O must occur only
+        once.
+    -}
 
 withNewMinimum :: (Element o -> OrderCompT o m a)
                -> OrderCompT o m a
 withNewMinimum = fromInsert insertMinimum
 
-withNewMinimum' :: (Element o -> OrderCompT o m a)
-                -> OrderCompT o m a
-withNewMinimum' = fromInsert' insertMinimum
-
 withNewMaximum :: (Element o -> OrderCompT o m a)
                -> OrderCompT o m a
 withNewMaximum = fromInsert insertMaximum
-
-withNewMaximum' :: (Element o -> OrderCompT o m a)
-                -> OrderCompT o m a
-withNewMaximum' = fromInsert' insertMaximum
 
 withNewAfter :: Element o
              -> (Element o -> OrderCompT o m a)
              -> OrderCompT o m a
 withNewAfter (~(Element rawElem _)) = fromInsert (insertAfter rawElem)
 
-withNewAfter' :: Element o
-              -> (Element o -> OrderCompT o m a)
-              -> OrderCompT o m a
-withNewAfter' (~(Element rawElem _)) = fromInsert' (insertAfter rawElem)
-
 withNewBefore :: Element o
               -> (Element o -> OrderCompT o m a)
               -> OrderCompT o m a
 withNewBefore (~(Element rawElem _)) = fromInsert (insertBefore rawElem)
-
-withNewBefore' :: Element o
-               -> (Element o -> OrderCompT o m a)
-               -> OrderCompT o m a
-withNewBefore' (~(Element rawElem _)) = fromInsert' (insertBefore rawElem)
 
 {-FIXME:
     The actual implementation has explicit deletions and uses the ST monad. It
