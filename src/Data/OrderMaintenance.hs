@@ -224,7 +224,7 @@ withNewBefore (~(Element rawElem _ _)) = fromInsert (flip insertBefore rawElem)
 {-FIXME:
     The actual implementation has explicit deletions and uses the ST monad. It
     is not exported (mainly because of the explicit deletions).
-    
+
     The internal implementation universally quantifies the o-parameter to make
     sure that it does not use any actual I/O. However, we later turn the ST
     computation into an IO computation using RealWorld. STRefs that internally
