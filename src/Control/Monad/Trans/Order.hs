@@ -2,6 +2,8 @@ module Control.Monad.Trans.Order (
 
     -- * The Order monad
     Order,
+    runOrder,
+    toOrderComp,
     evalOrder,
 
     -- * The OrderT monad transformer
@@ -48,6 +50,12 @@ import Data.OrderMaintenance
 -- * The Order monad
 
 type Order o = OrderT o Identity
+
+runOrder :: Order o a -> Cont (OrderComp o r) a
+runOrder = runOrderT
+
+toOrderComp :: Order o a -> OrderComp o a
+toOrderComp = toOrderCompT
 
 evalOrder :: (forall o . Order o a) -> a
 evalOrder order = runIdentity (evalOrderT order)
