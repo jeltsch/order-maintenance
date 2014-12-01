@@ -2,6 +2,7 @@ module Data.OrderMaintenance.Raw (
 
     RawOrder,
     RawElement,
+    ElementCell,
     RawAlgorithm (
         RawAlgorithm,
         newOrder,
@@ -9,12 +10,14 @@ module Data.OrderMaintenance.Raw (
         insertMinimum,
         insertMaximum,
         insertAfter,
-        insertBefore
+        insertBefore,
+        delete
     )
 
 ) where
 
 import Control.Monad.ST
+import Data.STRef
 
 {-FIXME:
     Implement the following:
@@ -34,13 +37,16 @@ import Control.Monad.ST
 
 type family RawOrder o :: * -> *
 
-type family RawElement o :: * -> *
+type RawElement o s = STRef s (ElementCell o s)
 
-data RawAlgorithm o s = Eq (RawElement o s) => RawAlgorithm {
+type family ElementCell o :: * -> *
+
+data RawAlgorithm o s = RawAlgorithm {
     newOrder        :: ST s (RawOrder o s),
     compareElements :: RawElement o s -> RawElement o s -> ST s Ordering,
     insertMinimum   :: RawOrder o s -> ST s (RawElement o s),
     insertMaximum   :: RawOrder o s -> ST s (RawElement o s),
     insertAfter     :: RawElement o s -> RawOrder o s -> ST s (RawElement o s),
-    insertBefore    :: RawElement o s -> RawOrder o s -> ST s (RawElement o s)
+    insertBefore    :: RawElement o s -> RawOrder o s -> ST s (RawElement o s),
+    delete          :: RawElement o s -> RawOrder o s -> ST s ()
 }

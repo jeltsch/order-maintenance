@@ -37,6 +37,7 @@ import Control.Concurrent.MVar
 
 import Data.Monoid
 import Data.Functor.Identity
+import Data.IORef
 import Data.OrderMaintenance.Raw
 import Data.OrderMaintenance.Algorithm
 import Data.OrderMaintenance.Algorithm.Type
@@ -45,12 +46,13 @@ import Data.OrderMaintenance.Algorithm.Type
 
 import System.IO.Unsafe
 
+-- GHC
+import GHC.IORef -- for converting from STRef RealWorld to IORef
+
 {-FIXME:
     We should declare this module as trustworthy, but for this, we might have to
     forbid outsiders to construct their own algorithms.
 -}
-
--- FIXME: We need to implement automatic deletion of elements.
 
 -- * Order computations
 
@@ -158,12 +160,10 @@ data Element o = Element (RawElement o RealWorld)
 
 instance Eq (Element o) where
 
-    (==) (Element rawElem1 (RawAlgorithm _ _ _ _ _ _) _)
-         (Element rawElem2 _                          _) = rawElem1 == rawElem2
-{-FIXME:
-    For this to work correctly, it is important that the Eq instance for raw
-    elements really corresponds to equality of elements.
--}
+    (==) (Element rawElem1 (RawAlgorithm _ _ _ _ _ _ _) _)
+         (Element rawElem2 _                            _) = equal where
+
+        equal = rawElem1 == rawElem2
 
 instance Ord (Element o) where
 
@@ -199,6 +199,10 @@ fromInsert insert cont = OrderCompT gen where
                  criticalSection lock $
                  do
                      rawElem <- stToIO $ insert rawAlg rawOrder
+                     mkWeakIORef (IORef rawElem)
+                                 (criticalSection lock $
+                                  stToIO $
+                                  delete rawAlg rawElem rawOrder)
                      return (Element rawElem rawAlg lock,order)
     {-FIXME:
         Introduce the safety measures for unsafePerformIO. The I/O must occur only
