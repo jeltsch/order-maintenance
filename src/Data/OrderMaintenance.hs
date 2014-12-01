@@ -156,8 +156,8 @@ instance Eq (Element o) where
 
     Element rawElem1 _ == Element rawElem2 _ = rawElem1 == rawElem2
 {-FIXME:
-    This assumes that raw elements are references. At the moment, this cannot be
-    generally assumed.
+    For this to work correctly, it is important that the Eq instance for raw
+    elements really corresponds to equality of elements.
 -}
 
 instance Ord (Element o) where
