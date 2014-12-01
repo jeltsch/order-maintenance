@@ -38,11 +38,11 @@ import Data.STRef
 
 type RawOrder o s = STRef s (OrderCell o s)
 
-type family OrderCell o :: * -> *
+type family OrderCell o s
 
 type RawElement o s = STRef s (ElementCell o s)
 
-type family ElementCell o :: * -> *
+type family ElementCell o s
 
 data RawAlgorithm o s = RawAlgorithm {
     newOrder        :: ST s (RawOrder o s),
