@@ -2,17 +2,17 @@ module Data.OrderMaintenance (
 
     -- * Order computations
     OrderComp,
-    composeOrderComp,
     evalOrderComp,
+    composeOrderComp,
 
     -- * Order computations with an inner monad
     OrderCompT,
+    evalOrderCompT,
     composeOrderCompT,
     finish,
     branch,
     withOutputOf,
     withForcedOrder,
-    evalOrderCompT,
 
     -- * Elements
     Element,
@@ -51,15 +51,15 @@ import System.IO.Unsafe
 
 type OrderComp o = OrderCompT o Identity
 
-composeOrderComp :: ((forall a . OrderComp o a -> a) -> b) -> OrderComp o b
-composeOrderComp build = composeOrderCompT $
-                         \ eval' -> Identity $ build (runIdentity . eval')
-
 evalOrderComp :: (forall o . OrderComp o a) -> a
 evalOrderComp comp = runIdentity (evalOrderCompT comp)
 {-FIXME:
     We should also have a function evalOrderCompWith that takes an algorithm.
 -}
+
+composeOrderComp :: ((forall a . OrderComp o a -> a) -> b) -> OrderComp o b
+composeOrderComp build = composeOrderCompT $
+                         \ eval' -> Identity $ build (runIdentity . eval')
 
 -- * Order computations with an inner monad
 
@@ -75,6 +75,25 @@ instance Alternative m => Monoid (OrderCompT o m a) where
 
 data Order = Order (RawOrder RealWorld) Lock
 -- NOTE: Evaluation of the Order constructor triggers the I/O for insertions.
+
+evalOrderCompT :: (forall o . OrderCompT o m a) -> m a
+evalOrderCompT (OrderCompT gen) = gen emptyOrder
+{-FIXME:
+    We should also have a function evalOrderCompTWith that takes an algorithm.
+    The function evalOrderCompT above should then be implemented in terms of
+    evalOrderCompTWith and a variable defaultAlgorithm.
+-}
+
+emptyOrder :: Order
+emptyOrder = unsafePerformIO $ do
+    rawOrder <- stToIO newOrder
+    lock <- newLock
+    return (Order rawOrder lock)
+{-FIXME:
+    Introduce the safety measures for unsafePerformIO. It should not matter how
+    many times the I/O is performed.
+-}
+-- FIXME: Maybe emptyOrder must be parameterized by an algorithm.
 
 composeOrderCompT :: ((forall a . OrderCompT o m a -> m a) -> m b)
                   -> OrderCompT o m b
@@ -124,25 +143,6 @@ withOutputOf monad cont = composeOrderCompT $
 
 withForcedOrder :: OrderCompT o m a -> OrderCompT o m a
 withForcedOrder (OrderCompT gen) = OrderCompT (gen $!)
-
-evalOrderCompT :: (forall o . OrderCompT o m a) -> m a
-evalOrderCompT (OrderCompT gen) = gen emptyOrder
-{-FIXME:
-    We should also have a function evalOrderCompTWith that takes an algorithm.
-    The function evalOrderCompT above should then be implemented in terms of
-    evalOrderCompTWith and a variable defaultAlgorithm.
--}
-
-emptyOrder :: Order
-emptyOrder = unsafePerformIO $ do
-    rawOrder <- stToIO newOrder
-    lock <- newLock
-    return (Order rawOrder lock)
-{-FIXME:
-    Introduce the safety measures for unsafePerformIO. It should not matter how
-    many times the I/O is performed.
--}
--- FIXME: Maybe emptyOrder must be parameterized by an algorithm.
 
 -- * Elements
 
