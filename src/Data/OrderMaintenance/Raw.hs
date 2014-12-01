@@ -1,24 +1,21 @@
 module Data.OrderMaintenance.Raw (
 
-    -- * Orders
     RawOrder,
-    newOrder,
-
-    -- * Elements
     RawElement,
-    compareElements,
-    insertMinimum,
-    insertMaximum,
-    insertAfter,
-    insertBefore
+    RawAlgorithm (
+        RawAlgorithm,
+        newOrder,
+        compareElements,
+        insertMinimum,
+        insertMaximum,
+        insertAfter,
+        insertBefore
+    ),
+    rawDefaultAlgorithm
 
 ) where
 
--- Control
 import Control.Monad.ST
-
--- Data
-import Data.STRef
 
 {-FIXME:
     Implement the following:
@@ -36,32 +33,18 @@ import Data.STRef
         structures)
 -}
 
--- * Orders
+type family RawOrder o :: * -> *
 
-type RawOrder s = STRef s OrderCell
+type family RawElement o :: * -> *
 
-data OrderCell = OrderCell -- to be implemented
+data RawAlgorithm o s = Eq (RawElement o s) => RawAlgorithm {
+    newOrder        :: ST s (RawOrder o s),
+    compareElements :: RawElement o s -> RawElement o s -> ST s Ordering,
+    insertMinimum   :: RawOrder o s -> ST s (RawElement o s),
+    insertMaximum   :: RawOrder o s -> ST s (RawElement o s),
+    insertAfter     :: RawElement o s -> RawOrder o s -> ST s (RawElement o s),
+    insertBefore    :: RawElement o s -> RawOrder o s -> ST s (RawElement o s)
+}
 
-newOrder :: ST s (RawOrder s)
-newOrder = undefined
-
--- * Elements
-
-type RawElement s = STRef s ElementCell
-
-data ElementCell = ElementCell -- to be implemented
-
-compareElements :: RawElement s -> RawElement s -> ST s Ordering
-compareElements = undefined
-
-insertMinimum :: RawOrder s -> ST s (RawElement s)
-insertMinimum = undefined
-
-insertMaximum :: RawOrder s -> ST s (RawElement s)
-insertMaximum = undefined
-
-insertAfter :: RawElement s -> RawOrder s -> ST s (RawElement s)
-insertAfter = undefined
-
-insertBefore :: RawElement s -> RawOrder s -> ST s (RawElement s)
-insertBefore = undefined
+rawDefaultAlgorithm :: RawAlgorithm o s
+rawDefaultAlgorithm = undefined

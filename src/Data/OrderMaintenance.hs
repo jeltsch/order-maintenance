@@ -3,11 +3,13 @@ module Data.OrderMaintenance (
     -- * Order computations
     OrderComp,
     evalOrderComp,
+    evalOrderCompWith,
     composeOrderComp,
 
     -- * Order computations with an inner monad
     OrderCompT,
     evalOrderCompT,
+    evalOrderCompTWith,
     composeOrderCompT,
 
     -- * Specific order computation compositions
@@ -54,9 +56,9 @@ type OrderComp o = OrderCompT o Identity
 
 evalOrderComp :: (forall o . OrderComp o a) -> a
 evalOrderComp comp = runIdentity (evalOrderCompT comp)
-{-FIXME:
-    We should also have a function evalOrderCompWith that takes an algorithm.
--}
+
+evalOrderCompWith :: Algorithm -> (forall o . OrderComp o a) -> a
+evalOrderCompWith alg comp = runIdentity (evalOrderCompTWith alg comp)
 
 composeOrderComp :: ((forall a . OrderComp o a -> a) -> b) -> OrderComp o b
 composeOrderComp build = composeOrderCompT $
@@ -64,7 +66,7 @@ composeOrderComp build = composeOrderCompT $
 
 -- * Order computations with an inner monad
 
-newtype OrderCompT o m a = OrderCompT (Order -> m a)
+newtype OrderCompT o m a = OrderCompT (Order o -> m a)
 
 instance Alternative m => Monoid (OrderCompT o m a) where
 
@@ -74,27 +76,25 @@ instance Alternative m => Monoid (OrderCompT o m a) where
     comp1 `mappend` comp2 = composeOrderCompT $
                             \ eval -> eval comp1 <|> eval comp2
 
-data Order = Order (RawOrder RealWorld) Lock
+data Order o = Order (RawOrder o RealWorld)
+                     (RawAlgorithm o RealWorld)
+                     Lock
 -- NOTE: Evaluation of the Order constructor triggers the I/O for insertions.
 
 evalOrderCompT :: (forall o . OrderCompT o m a) -> m a
-evalOrderCompT (OrderCompT gen) = gen emptyOrder
-{-FIXME:
-    We should also have a function evalOrderCompTWith that takes an algorithm.
-    The function evalOrderCompT above should then be implemented in terms of
-    evalOrderCompTWith and a variable defaultAlgorithm.
--}
+evalOrderCompT = evalOrderCompTWith defaultAlgorithm
 
-emptyOrder :: Order
-emptyOrder = unsafePerformIO $ do
-    rawOrder <- stToIO newOrder
-    lock <- newLock
-    return (Order rawOrder lock)
-{-FIXME:
-    Introduce the safety measures for unsafePerformIO. It should not matter how
-    many times the I/O is performed.
--}
--- FIXME: Maybe emptyOrder must be parameterized by an algorithm.
+evalOrderCompTWith :: Algorithm -> (forall o . OrderCompT o m a) -> m a
+evalOrderCompTWith (Algorithm rawAlg) (OrderCompT gen) = gen emptyOrder where
+
+    emptyOrder = unsafePerformIO $ do
+        rawOrder <- stToIO (newOrder rawAlg)
+        lock <- newLock
+        return (Order rawOrder rawAlg lock)
+    {-FIXME:
+        Introduce the safety measures for unsafePerformIO. It should not matter
+        how many times the I/O is performed.
+    -}
 
 composeOrderCompT :: ((forall a . OrderCompT o m a -> m a) -> m b)
                   -> OrderCompT o m b
@@ -149,12 +149,15 @@ withForcedOrder (OrderCompT gen) = OrderCompT (gen $!)
 
 -- * Elements
 
-data Element o = Element (RawElement RealWorld) Lock
+data Element o = Element (RawElement o RealWorld)
+                         (RawAlgorithm o RealWorld)
+                         Lock
 -- NOTE: Evaluation of the Element constructor triggers the I/O for insertions.
 
 instance Eq (Element o) where
 
-    Element rawElem1 _ == Element rawElem2 _ = rawElem1 == rawElem2
+    (==) (Element rawElem1 (RawAlgorithm _ _ _ _ _ _) _)
+         (Element rawElem2 _                          _) = rawElem1 == rawElem2
 {-FIXME:
     For this to work correctly, it is important that the Eq instance for raw
     elements really corresponds to equality of elements.
@@ -162,17 +165,20 @@ instance Eq (Element o) where
 
 instance Ord (Element o) where
 
-    compare (Element rawElem1 lock) (Element rawElem2 _) = ordering where
-    
+    compare (Element rawElem1 rawAlg lock)
+            (Element rawElem2 _      _)    = ordering where
+
         ordering = unsafePerformIO $
                    criticalSection lock $
-                   stToIO $ compareElements rawElem1 rawElem2
+                   stToIO $ compareElements rawAlg rawElem1 rawElem2
 {-FIXME:
     Introduce the safety measures for unsafePerformIO. It should not matter how
     many times the I/O is performed.
 -}
 
-fromInsert :: (RawOrder RealWorld -> ST RealWorld (RawElement RealWorld))
+fromInsert :: (RawAlgorithm o RealWorld
+                   -> RawOrder o RealWorld
+                   -> ST RealWorld (RawElement o RealWorld))
            -> (Element o -> OrderCompT o m a)
            -> OrderCompT o m a
 fromInsert insert cont = OrderCompT gen where
@@ -185,11 +191,13 @@ fromInsert insert cont = OrderCompT gen where
 
                 in contGen order'
 
-    explicitStateInsert order@(Order rawOrder lock) = unsafePerformIO $
-        criticalSection lock $
-        do
-            rawElem <- stToIO $ insert rawOrder
-            return (Element rawElem lock,order)
+    explicitStateInsert order@(Order rawOrder rawAlg lock) = output where
+
+        output = unsafePerformIO $
+                 criticalSection lock $
+                 do
+                     rawElem <- stToIO $ insert rawAlg rawOrder
+                     return (Element rawElem rawAlg lock,order)
     {-FIXME:
         Introduce the safety measures for unsafePerformIO. The I/O must occur only
         once.
@@ -206,12 +214,12 @@ withNewMaximum = fromInsert insertMaximum
 withNewAfter :: Element o
              -> (Element o -> OrderCompT o m a)
              -> OrderCompT o m a
-withNewAfter (~(Element rawElem _)) = fromInsert (insertAfter rawElem)
+withNewAfter (~(Element rawElem _ _)) = fromInsert (flip insertAfter rawElem)
 
 withNewBefore :: Element o
               -> (Element o -> OrderCompT o m a)
               -> OrderCompT o m a
-withNewBefore (~(Element rawElem _)) = fromInsert (insertBefore rawElem)
+withNewBefore (~(Element rawElem _ _)) = fromInsert (flip insertBefore rawElem)
 
 {-FIXME:
     The actual implementation has explicit deletions and uses the ST monad. It
@@ -226,6 +234,13 @@ withNewBefore (~(Element rawElem _)) = fromInsert (insertBefore rawElem)
     computation, it seems sensible to use strict ST. If we need to form a fixed
     point, however, it might be necessary to form this fixed point in lazy ST.
 -}
+
+-- * Algorithms
+
+data Algorithm = forall o . Algorithm (forall s . RawAlgorithm o s)
+
+defaultAlgorithm :: Algorithm
+defaultAlgorithm = Algorithm rawDefaultAlgorithm
 
 -- * Locks
 
