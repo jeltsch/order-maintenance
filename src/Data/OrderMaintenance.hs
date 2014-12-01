@@ -43,6 +43,11 @@ import Data.OrderMaintenance.Raw
 
 import System.IO.Unsafe
 
+{-FIXME:
+    We should declare this module as trustworthy, but for this, we might have to
+    forbid outsiders to construct their own algorithms.
+-}
+
 -- FIXME: We need to implement automatic deletion of elements.
 
 -- * Order computations
