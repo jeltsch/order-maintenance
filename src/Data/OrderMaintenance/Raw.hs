@@ -1,6 +1,7 @@
 module Data.OrderMaintenance.Raw (
 
     RawOrder,
+    OrderCell,
     RawElement,
     ElementCell,
     RawAlgorithm (
@@ -35,7 +36,9 @@ import Data.STRef
         structures)
 -}
 
-type family RawOrder o :: * -> *
+type RawOrder o s = STRef s (OrderCell o s)
+
+type family OrderCell o :: * -> *
 
 type RawElement o s = STRef s (ElementCell o s)
 
