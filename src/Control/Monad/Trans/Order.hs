@@ -11,6 +11,8 @@ module Control.Monad.Trans.Order (
     runOrderT,
     toOrderCompT,
     evalOrderT,
+
+    -- * Order operations
     force,
     insertMinimum,
     insertMaximum,
@@ -133,6 +135,8 @@ toOrderCompT (OrderT cont) = runCont cont finish
 
 evalOrderT :: Applicative m => (forall o . OrderT o m a) -> m a
 evalOrderT orderT = evalOrderCompT (toOrderCompT orderT)
+
+-- * Order operations
 
 force :: OrderT o m ()
 force = OrderT $ cont (withForcedOrder . ($ ()))
