@@ -9,6 +9,8 @@ module Data.OrderMaintenance (
     OrderCompT,
     evalOrderCompT,
     composeOrderCompT,
+
+    -- * Specific order computation compositions
     finish,
     branch,
     withOutputOf,
@@ -99,6 +101,8 @@ composeOrderCompT :: ((forall a . OrderCompT o m a -> m a) -> m b)
 composeOrderCompT build = OrderCompT gen where
 
     gen order = build (\ (OrderCompT gen) -> gen order)
+
+-- * Specific order computation compositions
 
 finish :: Applicative m => a -> OrderCompT o m a
 finish val = composeOrderCompT $
