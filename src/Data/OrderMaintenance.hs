@@ -227,20 +227,6 @@ withNewBefore :: Element o
               -> OrderCompT o m a
 withNewBefore (~(Element rawElem _ _)) = fromInsert (flip insertBefore rawElem)
 
-{-FIXME:
-    The actual implementation has explicit deletions and uses the ST monad. It
-    is not exported (mainly because of the explicit deletions).
-
-    The internal implementation universally quantifies the o-parameter to make
-    sure that it does not use any actual I/O. However, we later turn the ST
-    computation into an IO computation using RealWorld. STRefs that internally
-    serve as elements become IORefs.
-
-    Should we use lazy or strict ST? Since we turn the ST computation into an IO
-    computation, it seems sensible to use strict ST. If we need to form a fixed
-    point, however, it might be necessary to form this fixed point in lazy ST.
--}
-
 -- * Locks
 
 type Lock = MVar ()
