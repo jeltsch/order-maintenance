@@ -20,22 +20,6 @@ module Data.OrderMaintenance.Raw (
 import Control.Monad.ST
 import Data.STRef
 
-{-FIXME:
-    Implement the following:
-
-      • a dumb algorithm that uses sets of real numbers, which are represented
-        as bit strings
-
-      • a not so dump algorithm that uses arbitarily deep log-trees
-
-      • the file maintenance algorithm by Bender et al. combined with log-trees
-        of fixed height
-
-      • a function that converts any algorithm into one that shifts elements
-        between two orders upon deletion (for avoiding sparsly populated order
-        structures)
--}
-
 type RawOrder o s = STRef s (OrderCell o s)
 
 type family OrderCell o s
