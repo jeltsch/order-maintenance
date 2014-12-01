@@ -24,14 +24,12 @@ module Control.Monad.Trans.Order (
 -- Control
 
 import Control.Applicative
-import Control.Monad
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Cont
 import Control.Monad.IO.Class
 
 -- Data
 
-import Data.Monoid
 import Data.Functor.Identity
 import Data.OrderMaintenance
 

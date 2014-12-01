@@ -26,7 +26,6 @@ module Data.OrderMaintenance (
 -- Control
 
 import Control.Applicative
-import Control.Monad.Trans.Cont
 import Control.Monad.ST
 import Control.Concurrent.MVar
 
