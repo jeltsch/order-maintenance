@@ -10,8 +10,7 @@ module Data.OrderMaintenance.Raw (
         insertMaximum,
         insertAfter,
         insertBefore
-    ),
-    rawDefaultAlgorithm
+    )
 
 ) where
 
@@ -45,6 +44,3 @@ data RawAlgorithm o s = Eq (RawElement o s) => RawAlgorithm {
     insertAfter     :: RawElement o s -> RawOrder o s -> ST s (RawElement o s),
     insertBefore    :: RawElement o s -> RawOrder o s -> ST s (RawElement o s)
 }
-
-rawDefaultAlgorithm :: RawAlgorithm o s
-rawDefaultAlgorithm = undefined

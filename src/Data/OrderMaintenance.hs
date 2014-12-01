@@ -38,6 +38,8 @@ import Control.Concurrent.MVar
 import Data.Monoid
 import Data.Functor.Identity
 import Data.OrderMaintenance.Raw
+import Data.OrderMaintenance.Algorithm
+import Data.OrderMaintenance.Algorithm.Type
 
 -- System
 
@@ -234,13 +236,6 @@ withNewBefore (~(Element rawElem _ _)) = fromInsert (flip insertBefore rawElem)
     computation, it seems sensible to use strict ST. If we need to form a fixed
     point, however, it might be necessary to form this fixed point in lazy ST.
 -}
-
--- * Algorithms
-
-data Algorithm = forall o . Algorithm (forall s . RawAlgorithm o s)
-
-defaultAlgorithm :: Algorithm
-defaultAlgorithm = Algorithm rawDefaultAlgorithm
 
 -- * Locks
 
