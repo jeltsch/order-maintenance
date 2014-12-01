@@ -5,12 +5,21 @@ module Data.OrderMaintenance.Algorithm (
     defaultAlgorithm,
 
     -- * Specific algorithms
-    dumbAlgorithm
+    dumb
 
 ) where
 
 import Data.OrderMaintenance.Algorithm.Type
-import Data.OrderMaintenance.Algorithm.Dumb
+import Data.OrderMaintenance.Algorithm.Dumb as Dumb
+
+-- * General things
+
+-- NOTE: Algorithm is imported from the Data.OrderMaintenance.Algorithm.Type.
 
 defaultAlgorithm :: Algorithm
-defaultAlgorithm = dumbAlgorithm
+defaultAlgorithm = dumb
+
+-- * Specific algorithms
+
+dumb :: Algorithm
+dumb = Dumb.algorithm

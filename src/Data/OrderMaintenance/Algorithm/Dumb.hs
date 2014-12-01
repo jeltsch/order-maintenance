@@ -1,6 +1,6 @@
 module Data.OrderMaintenance.Algorithm.Dumb (
 
-    dumbAlgorithm
+    algorithm
 
 ) where
 
@@ -19,8 +19,8 @@ import           Data.Set (Set)
 import           Data.OrderMaintenance.Algorithm.Type
 import           Data.OrderMaintenance.Raw
 
-dumbAlgorithm :: Algorithm
-dumbAlgorithm = Algorithm dumbRawAlgorithm
+algorithm :: Algorithm
+algorithm = Algorithm rawAlgorithm
 
 data Dumb
 
@@ -59,8 +59,8 @@ add (bit1 : bits1) (bit2 : bits2) = (carry,sum) where
 
 type Bit = Bool
 
-dumbRawAlgorithm :: RawAlgorithm Dumb s
-dumbRawAlgorithm = RawAlgorithm {
+rawAlgorithm :: RawAlgorithm Dumb s
+rawAlgorithm = RawAlgorithm {
     newOrder        = newSTRef Set.empty,
     compareElements = liftA2 compare `on` readSTRef,
     insertMinimum   = fromPureInsert pureInsertMinimum,
