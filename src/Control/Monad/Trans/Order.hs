@@ -9,7 +9,7 @@ module Control.Monad.Trans.Order (
     runOrderT,
     toOrderCompT,
     evalOrderT,
-    forceOrder,
+    force,
     insertMinimum,
     insertMaximum,
     insertAfter,
@@ -42,7 +42,7 @@ import Data.OrderMaintenance
     A different matter is lazyness and strictness in the order. The analogous
     notion for StateT is lazyness and strictness in the state. In the case of
     StateT, it is possible to explicitely force the state using the computation
-    get >>= \ s -> s `seq` (). For OrderT, we provide forceOrder.
+    get >>= \ s -> s `seq` (). For OrderT, we provide force.
 -}
 
 -- * The Order monad
@@ -126,8 +126,8 @@ toOrderCompT (OrderT cont) = runCont cont finish
 evalOrderT :: Applicative m => (forall o . OrderT o m a) -> m a
 evalOrderT orderT = evalOrderCompT (toOrderCompT orderT)
 
-forceOrder :: OrderT o m ()
-forceOrder = OrderT $ cont (withForcedOrder . ($ ()))
+force :: OrderT o m ()
+force = OrderT $ cont (withForcedOrder . ($ ()))
 
 insertMinimum :: OrderT o m (Element o)
 insertMinimum = OrderT $ cont withNewMinimum
