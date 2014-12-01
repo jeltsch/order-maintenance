@@ -20,11 +20,20 @@ import Control.Monad.ST
 -- Data
 import Data.STRef
 
-{-
-!!! IMPORTANT:
-At least for comparison, define a type of order maintenance algorithms, bundling the operations; then have a value of this type for the hacked solution, one for the real thing™, and one endofuntion on algorithms that adds this moving of elements when elements are deleted. Then parameterize runOrderComp by the algorithm. The real thing™ algorithm would then be parameterized by the speed.
+{-FIXME:
+    Implement the following:
 
-??? We should turn OT into some sort of monad transformer. For this to work, the insert operations of OrderComp probably have to work with monads as well (CPS with a monad). Would they be safe with any monad? Are there any insertion operations that are more core and from which the monadic ones could be derived?
+      • a dumb algorithm that uses sets of real numbers, which are represented
+        as bit strings
+
+      • a not so dump algorithm that uses arbitarily deep log-trees
+
+      • the file maintenance algorithm by Bender et al. combined with log-trees
+        of fixed height
+
+      • a function that converts any algorithm into one that shifts elements
+        between two orders upon deletion (for avoiding sparsly populated order
+        structures)
 -}
 
 -- * Orders
