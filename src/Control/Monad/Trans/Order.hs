@@ -9,6 +9,7 @@ module Control.Monad.Trans.Order (
     runOrderT,
     toOrderCompT,
     evalOrderT,
+    forceOrder,
     insertMinimum,
     insertMaximum,
     insertAfter,
@@ -31,22 +32,17 @@ import Data.Functor.Identity
 import Data.OrderMaintenance
 
 {-FIXME:
-    For WriterT, StateT, and RWST, there are strict and lazy variants. They
-    differ in how (>>=) is implemented. ReaderT is always lazy, and ContT is
-    always strict. As a result of the latter, there is no strict and lazy
-    variant of OrderT, but OrderT is always a strict monad in the sense of the
-    Control.Monad.Trans.Class documentation.
+    The monads WriterT, StateT, and RWST come in a lazy and a strict variant,
+    where the terms “lazy monad” and “strict monad” are defined as in the
+    documentation of Control.Monad.Trans.Class. These lazy and strict variants
+    differ in how (>>=) is implemented. ReaderT is always a lazy monad, and
+    ContT is always a strict monad. As a result of the latter fact, there is no
+    lazy and strict variant of OrderT, but OrderT is always a strict monad.
 
-    We should distinguish between lazy and strict versions of the insert
-    operations. Is this about strictness in the order? Is there actually a
-    difference, given that ContT is always strict?
-
-    Maybe we do not even need lazy and strict versions of the insert operations,
-    also not of the primitive ones for OrderCompT. It might be enough to have a
-    operation that forces the order. For OrderT, this would be analogous to the
-    operation get >>= \ s -> s `seq` () for StateT. For OrderCompT, this
-    operation would probably have the type OrderCompT -> OrderCompT and be
-    implemented as ($!).
+    A different matter is lazyness and strictness in the order. The analogous
+    notion for StateT is lazyness and strictness in the state. In the case of
+    StateT, it is possible to explicitely force the state using the computation
+    get >>= \ s -> s `seq` (). For OrderT, we provide forceOrder.
 -}
 
 -- * The Order monad
@@ -129,6 +125,9 @@ toOrderCompT (OrderT cont) = runCont cont finish
 
 evalOrderT :: Applicative m => (forall o . OrderT o m a) -> m a
 evalOrderT orderT = evalOrderCompT (toOrderCompT orderT)
+
+forceOrder :: OrderT o m ()
+forceOrder = OrderT $ cont (withForcedOrder . ($ ()))
 
 insertMinimum :: OrderT o m (Element o)
 insertMinimum = OrderT $ cont withNewMinimum
