@@ -11,13 +11,14 @@ module Control.Monad.Trans.Order (
     runOrderT,
     toOrderCompT,
     evalOrderT,
+    force,
 
-    -- * Order operations
+    -- * Elements
+    Element,
     insertMinimum,
     insertMaximum,
     insertAfter,
-    insertBefore,
-    force
+    insertBefore
 
 ) where
 
@@ -134,7 +135,12 @@ toOrderCompT (OrderT cont) = runCont cont finish
 evalOrderT :: Applicative m => (forall o . OrderT o m a) -> m a
 evalOrderT orderT = evalOrderCompT (toOrderCompT orderT)
 
--- * Order operations
+force :: OrderT o m ()
+force = OrderT $ cont (withForcedOrder . ($ ()))
+
+-- * Elements
+
+-- NOTE: Element is imported from Data.OrderMaintenance.
 
 insertMinimum :: OrderT o m (Element o)
 insertMinimum = OrderT $ cont withNewMinimum
@@ -154,6 +160,3 @@ insertBefore refElem = OrderT $ cont (withNewAfter refElem)
     different subcomputations combined by (<*>) is not a problem, as these
     subcomputations are sequentially executed and so the order is determined.
 -}
-
-force :: OrderT o m ()
-force = OrderT $ cont (withForcedOrder . ($ ()))
