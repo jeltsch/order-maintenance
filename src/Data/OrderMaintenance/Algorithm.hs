@@ -23,6 +23,9 @@ import Data.OrderMaintenance.Algorithm.Dumb as Dumb
       • a function that converts any algorithm into one that shifts elements
         between two orders upon deletion (for avoiding sparsly populated order
         structures)
+
+    Maybe it makes sense to additionally offer the file maintenance algorithm by
+    Bender et al. as an order maintenance algorithm in its own right.
 -}
 
 -- * General things
