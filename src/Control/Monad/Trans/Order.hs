@@ -1,12 +1,14 @@
 module Control.Monad.Trans.Order (
 
     -- * The Order monad
+
     Order,
     runOrder,
     toOrderComp,
     evalOrder,
 
     -- * The OrderT monad transformer
+
     OrderT (OrderT),
     runOrderT,
     toOrderCompT,
@@ -14,6 +16,7 @@ module Control.Monad.Trans.Order (
     force,
 
     -- * Elements
+
     Element,
     insertMinimum,
     insertMaximum,

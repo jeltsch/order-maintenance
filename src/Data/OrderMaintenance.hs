@@ -1,24 +1,28 @@
 module Data.OrderMaintenance (
 
     -- * Order computations
+
     OrderComp,
     evalOrderComp,
     evalOrderCompWith,
     composeOrderComp,
 
     -- * Order computations with an inner monad
+
     OrderCompT,
     evalOrderCompT,
     evalOrderCompTWith,
     composeOrderCompT,
 
     -- * Specific order computation compositions
+
     finish,
     branch,
     withOutputOf,
     withForcedOrder,
 
     -- * Elements
+
     Element,
     withNewMinimum,
     withNewMaximum,

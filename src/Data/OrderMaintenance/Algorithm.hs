@@ -1,10 +1,12 @@
 module Data.OrderMaintenance.Algorithm (
 
     -- * General things
+
     Algorithm,
     defaultAlgorithm,
 
     -- * Specific algorithms
+
     dumb
 
 ) where
