@@ -117,7 +117,7 @@ finish val = composeOrderCompT $
              \ _ -> pure val
 
 branch :: Applicative m =>
-          OrderCompT o m a -> OrderCompT o m b -> OrderCompT o m (a,b)
+          OrderCompT o m a -> OrderCompT o m b -> OrderCompT o m (a, b)
 branch comp1 comp2 = composeOrderCompT $
                      \ eval -> liftA2 (,) (eval comp1) (eval comp2)
 
@@ -191,7 +191,7 @@ fromInsert insert cont = OrderCompT gen where
 
     gen order = let
 
-                    (elem,order') = explicitStateInsert order
+                    (elem, order') = explicitStateInsert order
 
                     OrderCompT contGen = cont elem
 
@@ -207,7 +207,7 @@ fromInsert insert cont = OrderCompT gen where
                                  (criticalSection lock $
                                   stToIO $
                                   delete rawAlg rawElem rawOrder)
-                     return (Element rawElem rawAlg lock,order)
+                     return (Element rawElem rawAlg lock, order)
     {-FIXME:
         Introduce the safety measures for unsafePerformIO. The I/O must occur only
         once.

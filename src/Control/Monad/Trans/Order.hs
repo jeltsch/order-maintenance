@@ -109,11 +109,11 @@ instance Monad (OrderT o m) where
         type SpecificComp = OrderCompT o (MaybeT (Writer [()]))
 
         cps :: (a -> SpecificComp r) -> SpecificComp r
-        cps _ = withOutputOf (MaybeT (writer (Nothing,[()]))) finish
+        cps _ = withOutputOf (MaybeT (writer (Nothing, [()]))) finish
 
     Note that the mempty of SpecificComp r is as follows:
 
-        withOutputOf (MaybeT (writer (Nothing,[]))) finish
+        withOutputOf (MaybeT (writer (Nothing, []))) finish
 -}
 
 {-FIXME:

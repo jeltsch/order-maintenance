@@ -43,10 +43,10 @@ rawAlgorithm = RawAlgorithm {
     delete          = relative fromPure pureDelete
 }
 
-fromPure :: (PureOrder -> (a,PureOrder)) -> RawOrder Dumb s -> ST s a
+fromPure :: (PureOrder -> (a, PureOrder)) -> RawOrder Dumb s -> ST s a
 fromPure trans rawOrder = do
                               pureOrder <- readSTRef rawOrder
-                              let (output,pureOrder') = trans pureOrder
+                              let (output, pureOrder') = trans pureOrder
                               writeSTRef rawOrder pureOrder'
                               return output
 
@@ -59,7 +59,7 @@ fromPureInsert trans rawOrder = fromPure trans' rawOrder >>= newSTRef where
 
                            pureElement = trans pureOrder
 
-                       in (pureElement,Set.insert pureElement pureOrder)
+                       in (pureElement, Set.insert pureElement pureOrder)
 
 relative :: ((PureOrder -> a) -> RawOrder Dumb s -> ST s b)
          -> (PureElement -> PureOrder -> a)
@@ -96,5 +96,5 @@ pureInsertBefore pureElement pureOrder = pureElement' where
     pureElement' | Set.null lesser = pureElement / 2
                  | otherwise       = (pureElement + Set.findMax lesser) / 2
 
-pureDelete :: PureElement -> PureOrder -> ((),PureOrder)
-pureDelete pureElement pureOrder = ((),Set.delete pureElement pureOrder)
+pureDelete :: PureElement -> PureOrder -> ((), PureOrder)
+pureDelete pureElement pureOrder = ((), Set.delete pureElement pureOrder)
