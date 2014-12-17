@@ -50,6 +50,23 @@ import Data.OrderMaintenance
     StateT, it is possible to explicitely force the state using the computation
     get >>= \ s -> s `seq` (). For OrderT, we provide force.
 -}
+{-FIXME:
+    Big problem:
+
+      • OrderT is strict in the sense of the transformers package. As a result,
+        the conversion from the CPS representation to the pure function
+        representation in the incremental-computing package will fail.
+
+    Possible solution:
+
+      • Ditch OrderCompT and implement OrderT o as StateT (Order o) in lazy and
+        strict variants.
+
+    When following this solution, consider introducing a restricted variant of
+    mapStateT:
+
+            mapOrderT :: (forall a . m a -> n a) -> OrderT o m a -> OrderT o n a
+-}
 
 -- * The Order monad
 
