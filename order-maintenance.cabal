@@ -42,7 +42,7 @@ Library
                         TypeFamilies
 
     if impl(ghc >= 7.8) {
-        Extensions: AutoDeriveTypeable
+        Default-Extensions: AutoDeriveTypeable
     }
 
     Exposed-Modules: Control.Monad.Trans.Order
