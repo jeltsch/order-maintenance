@@ -1,6 +1,6 @@
 Name:          order-maintenance
 Version:       0.0.0.0
-Cabal-Version: >= 1.8
+Cabal-Version: >= 1.16
 Build-Type:    Simple
 License:       BSD3
 License-File:  LICENSE
@@ -33,11 +33,13 @@ Library
                    containers   >= 0.5 && < 0.6,
                    transformers >= 0.3 && < 0.5
 
-    Extensions: EmptyDataDecls
-                ExistentialQuantification
-                FlexibleContexts
-                RankNTypes
-                TypeFamilies
+    Default-Language: Haskell2010
+
+    Default-Extensions: EmptyDataDecls
+                        ExistentialQuantification
+                        FlexibleContexts
+                        RankNTypes
+                        TypeFamilies
 
     if impl(ghc >= 7.8) {
         Extensions: AutoDeriveTypeable
