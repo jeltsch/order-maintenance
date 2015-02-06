@@ -18,10 +18,10 @@ module Control.Monad.Trans.Order (
     -- * Elements
 
     Element,
-    insertMinimum,
-    insertMaximum,
-    insertAfter,
-    insertBefore
+    newMinimum,
+    newMaximum,
+    newAfter,
+    newBefore
 
 ) where
 
@@ -162,17 +162,17 @@ force = OrderT $ cont (withForcedOrder . ($ ()))
 
 -- NOTE: Element is imported from Data.OrderMaintenance.
 
-insertMinimum :: OrderT o m (Element o)
-insertMinimum = OrderT $ cont withNewMinimum
+newMinimum :: OrderT o m (Element o)
+newMinimum = OrderT $ cont withNewMinimum
 
-insertMaximum :: OrderT o m (Element o)
-insertMaximum = OrderT $ cont withNewMinimum
+newMaximum :: OrderT o m (Element o)
+newMaximum = OrderT $ cont withNewMinimum
 
-insertAfter :: Element o -> OrderT o m (Element o)
-insertAfter refElem = OrderT $ cont (withNewAfter refElem)
+newAfter :: Element o -> OrderT o m (Element o)
+newAfter refElem = OrderT $ cont (withNewAfter refElem)
 
-insertBefore :: Element o -> OrderT o m (Element o)
-insertBefore refElem = OrderT $ cont (withNewAfter refElem)
+newBefore :: Element o -> OrderT o m (Element o)
+newBefore refElem = OrderT $ cont (withNewAfter refElem)
 
 {-NOTE:
     OrderT o is a monad. As a result, it is also an applicative functor, but one
