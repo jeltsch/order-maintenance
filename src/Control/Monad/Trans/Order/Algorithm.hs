@@ -1,4 +1,4 @@
-module Data.OrderMaintenance.Algorithm (
+module Control.Monad.Trans.Order.Algorithm (
 
     -- * General things
 
@@ -11,8 +11,8 @@ module Data.OrderMaintenance.Algorithm (
 
 ) where
 
-import Data.OrderMaintenance.Algorithm.Type
-import Data.OrderMaintenance.Algorithm.Dumb as Dumb
+import Control.Monad.Trans.Order.Algorithm.Type
+import Control.Monad.Trans.Order.Algorithm.Dumb as Dumb
 
 {-FIXME:
     Implement the following:

@@ -1,4 +1,4 @@
-module Data.OrderMaintenance.Raw (
+module Control.Monad.Trans.Order.Raw (
 
     RawOrder,
     OrderCell,

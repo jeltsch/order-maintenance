@@ -38,6 +38,7 @@ Library
     Default-Extensions: EmptyDataDecls
                         ExistentialQuantification
                         FlexibleContexts
+                        GeneralizedNewtypeDeriving
                         RankNTypes
                         TypeFamilies
 
@@ -46,11 +47,10 @@ Library
     }
 
     Exposed-Modules: Control.Monad.Trans.Order
-                     Data.OrderMaintenance
-                     Data.OrderMaintenance.Algorithm
+                     Control.Monad.Trans.Order.Algorithm
 
-    Other-Modules: Data.OrderMaintenance.Algorithm.Dumb
-                   Data.OrderMaintenance.Algorithm.Type
-                   Data.OrderMaintenance.Raw
+    Other-Modules: Control.Monad.Trans.Order.Algorithm.Dumb
+                   Control.Monad.Trans.Order.Algorithm.Type
+                   Control.Monad.Trans.Order.Raw
 
     HS-Source-Dirs: src

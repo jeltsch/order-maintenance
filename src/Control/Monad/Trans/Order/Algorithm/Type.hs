@@ -1,9 +1,9 @@
-module Data.OrderMaintenance.Algorithm.Type (
+module Control.Monad.Trans.Order.Algorithm.Type (
 
     Algorithm (Algorithm)
 
 ) where
 
-import Data.OrderMaintenance.Raw
+import Control.Monad.Trans.Order.Raw
 
 data Algorithm = forall o . Algorithm (forall s . RawAlgorithm o s)
