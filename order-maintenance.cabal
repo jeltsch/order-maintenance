@@ -48,9 +48,12 @@ Library
 
     Exposed-Modules: Control.Monad.Trans.Order
                      Control.Monad.Trans.Order.Algorithm
+                     Control.Monad.Trans.Order.Lazy
+                     Control.Monad.Trans.Order.Strict
 
     Other-Modules: Control.Monad.Trans.Order.Algorithm.Dumb
                    Control.Monad.Trans.Order.Algorithm.Type
+                   Control.Monad.Trans.Order.Lazy.Internals
                    Control.Monad.Trans.Order.Raw
 
     HS-Source-Dirs: src
