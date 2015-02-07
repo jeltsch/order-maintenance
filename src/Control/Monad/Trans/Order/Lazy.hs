@@ -27,9 +27,9 @@ module Control.Monad.Trans.Order.Lazy (
 import Control.Monad.ST
 import Control.Monad.Trans.State.Lazy
 import Control.Monad.Trans.Order.Raw
+import Control.Monad.Trans.Order.Lazy.Internals
 import Control.Monad.Trans.Order.Algorithm
 import Control.Monad.Trans.Order.Algorithm.Type
-import Control.Monad.Trans.Order.Lazy.Internals
 
 -- Data
 

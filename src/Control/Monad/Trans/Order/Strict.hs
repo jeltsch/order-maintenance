@@ -18,7 +18,7 @@ module Control.Monad.Trans.Order.Strict (
     newMinimum,
     newMaximum,
     newAfter,
-    newBefore
+    newBefore,
 
     -- * Converting between lazy and strict OrderT
 
@@ -29,11 +29,27 @@ module Control.Monad.Trans.Order.Strict (
 
 -- Control
 
-import           Control.Monad.Trans.State.Lazy                     as Lazy
+import           Control.Monad
+import           Control.Applicative
+import           Control.Monad.Trans.Class
+import           Control.Monad.IO.Class
+import qualified Control.Monad.Trans.State.Lazy
+                     as Lazy
 import           Control.Monad.Trans.State.Strict
-import           Control.Monad.Trans.Order.Lazy (OrderRep, Element)
-import qualified Control.Monad.Trans.Order.Lazy                     as Lazy
-import qualified Control.Monad.Trans.Order.Lazy.Internals           as Lazy
+import           Control.Monad.Trans.Order.Lazy
+                     (Element)
+import qualified Control.Monad.Trans.Order.Lazy
+                     as Lazy
+import           Control.Monad.Trans.Order.Lazy.Internals
+                     (OrderRep, emptyOrderRep)
+import qualified Control.Monad.Trans.Order.Lazy.Internals
+                     as Lazy
+import           Control.Monad.Trans.Order.Algorithm
+import           Control.Monad.Trans.Order.Algorithm.Type
+
+-- Data
+
+import Data.Functor.Identity
 
 -- * The Order monad
 

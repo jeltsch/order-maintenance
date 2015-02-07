@@ -18,8 +18,8 @@ module Control.Monad.Trans.Order.Lazy.Internals (
 import Control.Monad
 import Control.Applicative
 import Control.Monad.Trans.Class
-import Control.Monad.Trans.State.Lazy
 import Control.Monad.IO.Class
+import Control.Monad.Trans.State.Lazy
 import Control.Monad.ST
 import Control.Concurrent.MVar
 import Control.Monad.Trans.Order.Raw
