@@ -43,7 +43,7 @@ newtype OrderT o m a = OrderT (StateT (OrderRep o) m a) deriving (
 data OrderRep o = OrderRep (RawOrder o RealWorld)
                            (RawAlgorithm o RealWorld)
                            Lock
--- NOTE: Evaluation of the Order constructor triggers the I/O for insertions.
+-- NOTE: Evaluation of the OrderRep constructor triggers the I/O for insertions.
 
 emptyOrderRep :: (forall s . RawAlgorithm o s) -> OrderRep o
 emptyOrderRep rawAlg = unsafePerformIO $ do
