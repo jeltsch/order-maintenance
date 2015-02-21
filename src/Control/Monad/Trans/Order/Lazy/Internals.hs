@@ -43,6 +43,7 @@ newtype OrderT o m a = OrderT (StateT (OrderRep o) m a) deriving (
 data OrderRep o = OrderRep (RawOrder o RealWorld)
                            (RawAlgorithm o RealWorld)
                            Lock
+-- FIXME: Maybe use OrderedSet instead of OrderRep.
 -- NOTE: Evaluation of the OrderRep constructor triggers the I/O for insertions.
 
 emptyOrderRep :: (forall s . RawAlgorithm o s) -> OrderRep o
