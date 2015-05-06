@@ -7,12 +7,16 @@ module Control.Monad.Trans.Order.Algorithm (
 
     -- * Specific algorithms
 
-    dumb
+    dumb,
+    dietzSleatorAmortizedLog
 
 ) where
 
 import Control.Monad.Trans.Order.Algorithm.Type
-import Control.Monad.Trans.Order.Algorithm.Dumb as Dumb
+import Control.Monad.Trans.Order.Algorithm.Dumb
+           as Dumb
+import Control.Monad.Trans.Order.Algorithm.DietzSleatorAmortizedLog
+           as DietzSleatorAmortizedLog
 
 {-FIXME:
     Implement the following:
@@ -75,9 +79,12 @@ import Control.Monad.Trans.Order.Algorithm.Dumb as Dumb
 -- NOTE: Algorithm is imported from Data.OrderMaintenance.Algorithm.Type.
 
 defaultAlgorithm :: Algorithm
-defaultAlgorithm = dumb
+defaultAlgorithm = dietzSleatorAmortizedLog
 
 -- * Specific algorithms
 
 dumb :: Algorithm
 dumb = Dumb.algorithm
+
+dietzSleatorAmortizedLog :: Algorithm
+dietzSleatorAmortizedLog = DietzSleatorAmortizedLog.algorithm

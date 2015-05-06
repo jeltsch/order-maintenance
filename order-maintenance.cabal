@@ -51,7 +51,8 @@ Library
                      Control.Monad.Trans.Order.Lazy
                      Control.Monad.Trans.Order.Strict
 
-    Other-Modules: Control.Monad.Trans.Order.Algorithm.Dumb
+    Other-Modules: Control.Monad.Trans.Order.Algorithm.DietzSleatorAmortizedLog
+                   Control.Monad.Trans.Order.Algorithm.Dumb
                    Control.Monad.Trans.Order.Algorithm.Type
                    Control.Monad.Trans.Order.Lazy.Internals
                    Control.Monad.Trans.Order.Raw
