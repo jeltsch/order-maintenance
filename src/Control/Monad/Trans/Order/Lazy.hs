@@ -24,12 +24,15 @@ module Control.Monad.Trans.Order.Lazy (
 
 -- Control
 
-import Control.Monad.ST
-import Control.Monad.Trans.State.Lazy
-import Control.Monad.Trans.Order.Raw
-import Control.Monad.Trans.Order.Lazy.Internals
-import Control.Monad.Trans.Order.Algorithm
-import Control.Monad.Trans.Order.Algorithm.Type
+import           Control.Monad.ST
+import           Control.Monad.Trans.State.Lazy
+import           Control.Monad.Trans.Order.Raw
+                     hiding (newMinimum, newMaximum, newAfter, newBefore)
+import qualified Control.Monad.Trans.Order.Raw
+                     as Raw
+import           Control.Monad.Trans.Order.Lazy.Internals
+import           Control.Monad.Trans.Order.Algorithm
+import           Control.Monad.Trans.Order.Algorithm.Type
 
 -- Data
 
@@ -112,19 +115,19 @@ instance Ord (Element o) where
     many times the I/O is performed.
 -}
 
-fromInsert :: Monad m
-           => (RawAlgorithm o RealWorld
-                   -> RawOrder o RealWorld
-                   -> ST RealWorld (RawElement o RealWorld))
-           -> OrderT o m (Element o)
-fromInsert insert = OrderT $ StateT (return . explicitStateInsert) where
+fromRaw :: Monad m
+        => (RawAlgorithm o RealWorld
+                -> RawOrder o RealWorld
+                -> ST RealWorld (RawElement o RealWorld))
+        -> OrderT o m (Element o)
+fromRaw rawNew = OrderT $ StateT (return . explicitStateNew) where
 
-    explicitStateInsert order@(OrderRep rawOrder rawAlg lock) = output where
+    explicitStateNew order@(OrderRep rawOrder rawAlg lock) = output where
 
         output = unsafePerformIO $
                  criticalSection lock $
                  do
-                     rawElem <- stToIO $ insert rawAlg rawOrder
+                     rawElem <- stToIO $ rawNew rawAlg rawOrder
                      mkWeakIORef (IORef rawElem)
                                  (criticalSection lock $
                                   stToIO $
@@ -136,13 +139,13 @@ fromInsert insert = OrderT $ StateT (return . explicitStateInsert) where
     -}
 
 newMinimum :: Monad m => OrderT o m (Element o)
-newMinimum = fromInsert insertMinimum
+newMinimum = fromRaw Raw.newMinimum
 
 newMaximum :: Monad m => OrderT o m (Element o)
-newMaximum = fromInsert insertMaximum
+newMaximum = fromRaw Raw.newMaximum
 
 newAfter :: Monad m => Element o -> OrderT o m (Element o)
-newAfter (~(Element rawElem _ _)) = fromInsert (flip insertAfter rawElem)
+newAfter (~(Element rawElem _ _)) = fromRaw (flip Raw.newAfter rawElem)
 
 newBefore :: Monad m => Element o -> OrderT o m (Element o)
-newBefore (~(Element rawElem _ _)) = fromInsert (flip insertBefore rawElem)
+newBefore (~(Element rawElem _ _)) = fromRaw (flip Raw.newBefore rawElem)

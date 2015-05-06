@@ -8,10 +8,10 @@ module Control.Monad.Trans.Order.Raw (
         RawAlgorithm,
         newOrder,
         compareElements,
-        insertMinimum,
-        insertMaximum,
-        insertAfter,
-        insertBefore,
+        newMinimum,
+        newMaximum,
+        newAfter,
+        newBefore,
         delete
     )
 
@@ -31,9 +31,9 @@ type family ElementCell o s
 data RawAlgorithm o s = RawAlgorithm {
     newOrder        :: ST s (RawOrder o s),
     compareElements :: RawElement o s -> RawElement o s -> ST s Ordering,
-    insertMinimum   :: RawOrder o s -> ST s (RawElement o s),
-    insertMaximum   :: RawOrder o s -> ST s (RawElement o s),
-    insertAfter     :: RawElement o s -> RawOrder o s -> ST s (RawElement o s),
-    insertBefore    :: RawElement o s -> RawOrder o s -> ST s (RawElement o s),
+    newMinimum      :: RawOrder o s -> ST s (RawElement o s),
+    newMaximum      :: RawOrder o s -> ST s (RawElement o s),
+    newAfter        :: RawElement o s -> RawOrder o s -> ST s (RawElement o s),
+    newBefore       :: RawElement o s -> RawOrder o s -> ST s (RawElement o s),
     delete          :: RawElement o s -> RawOrder o s -> ST s ()
 }

@@ -36,10 +36,10 @@ rawAlgorithm :: RawAlgorithm Dumb s
 rawAlgorithm = RawAlgorithm {
     newOrder        = newSTRef Set.empty,
     compareElements = liftA2 compare `on` readSTRef,
-    insertMinimum   = fromPureInsert pureInsertMinimum,
-    insertMaximum   = fromPureInsert pureInsertMaximum,
-    insertAfter     = relative fromPureInsert pureInsertAfter,
-    insertBefore    = relative fromPureInsert pureInsertBefore,
+    newMinimum      = fromPureInsert pureInsertMinimum,
+    newMaximum      = fromPureInsert pureInsertMaximum,
+    newAfter        = relative fromPureInsert pureInsertAfter,
+    newBefore       = relative fromPureInsert pureInsertBefore,
     delete          = relative fromPure pureDelete
 }
 
