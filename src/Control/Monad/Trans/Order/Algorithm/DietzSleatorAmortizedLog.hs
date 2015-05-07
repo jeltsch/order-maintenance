@@ -15,7 +15,6 @@ import Control.Monad.Trans.Order.Raw
 
 -- Data
 
-import Data.Function
 import Data.STRef
 import Data.Word
 import Data.Bits
