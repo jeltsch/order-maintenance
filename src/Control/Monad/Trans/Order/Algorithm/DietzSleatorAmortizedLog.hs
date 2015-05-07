@@ -131,7 +131,11 @@ rawAlgorithmWithSize size
                 cell <- readSTRef ref
                 let gapSum = labelDistance (label cell) (label startCell)
                 if gapSum <= gapCount ^ 2
-                    then delimSearch (next cell) (succ gapCount)
+                    then if ref == startRef
+                             then error "Control.Monad.Trans.Order.Algorithm.\
+                                        \DietzSleatorAmortizedLog: \
+                                        \Order full"
+                             else delimSearch (next cell) (succ gapCount)
                     else return (ref, gapSum, gapCount)
         (delimRef, gapSum, gapCount) <- delimSearch (next startCell) 1
         let smallGap = gapSum `div` gapCount
@@ -144,6 +148,13 @@ rawAlgorithmWithSize size
                 writeSTRef ref (cell { label = lbl })
                 changeLabels (next cell) (succ idx)
         changeLabels (next startCell) 1
+    {-FIXME:
+        We allow the number of cells to be larger than the square root of the
+        number of possible labels as long as we find a sparse part in our circle
+        of cells (since our order full condition is only true if the complete
+        circle is congested). This should not influence correctness and probably
+        also not time complexity, but we should check this more thoroughly.
+    -}
 
     newBeforeCell :: CellRef s -> ST s (CellRef s)
     newBeforeCell ref = do
