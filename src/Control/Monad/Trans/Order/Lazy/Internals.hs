@@ -22,6 +22,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Trans.State.Lazy
 import Control.Monad.ST
 import Control.Concurrent.MVar
+import Control.Exception
 import Control.Monad.Trans.Order.Raw
 
 -- System
@@ -64,8 +65,4 @@ newLock :: IO Lock
 newLock = newEmptyMVar
 
 criticalSection :: Lock -> IO a -> IO a
-criticalSection lock act = do
-    putMVar lock ()
-    val <- act
-    takeMVar lock
-    return val
+criticalSection lock act = bracket_ (putMVar lock ()) (takeMVar lock) act
