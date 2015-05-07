@@ -43,7 +43,7 @@ data Cell s = Cell {
 
 type CellRef s = STRef s (Cell s)
 
-newtype Label = Label LabelWord deriving (Eq, Ord, Enum, Show)
+newtype Label = Label LabelWord deriving (Eq, Ord)
 
 type LabelWord = Word64
 
