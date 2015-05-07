@@ -55,7 +55,7 @@ initialBaseLabel = Label 0
 
 rawAlgorithmWithSize :: Int -> RawAlgorithm DietzSleatorAmortizedLog s
 rawAlgorithmWithSize size
-    | size < 0 || size >= 64
+    | size < 0 || size >= labelWordSize
         = error "Control.Monad.Trans.Order.Algorithm.DietzSleatorAmortizedLog: \
                 \Size out of bounds"
     | otherwise
