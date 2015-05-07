@@ -8,7 +8,8 @@ module Control.Monad.Trans.Order.Algorithm (
     -- * Specific algorithms
 
     dumb,
-    dietzSleatorAmortizedLog
+    dietzSleatorAmortizedLog,
+    dietzSleatorAmortizedLogWithSize
 
 ) where
 
@@ -88,3 +89,6 @@ dumb = Dumb.algorithm
 
 dietzSleatorAmortizedLog :: Algorithm
 dietzSleatorAmortizedLog = DietzSleatorAmortizedLog.algorithm
+
+dietzSleatorAmortizedLogWithSize :: Int -> Algorithm
+dietzSleatorAmortizedLogWithSize = DietzSleatorAmortizedLog.algorithmWithSize
