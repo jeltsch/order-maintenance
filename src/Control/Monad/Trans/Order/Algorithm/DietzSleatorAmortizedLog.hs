@@ -155,6 +155,14 @@ rawAlgorithmWithSize size
         circle is congested). This should not influence correctness and probably
         also not time complexity, but we should check this more thoroughly.
     -}
+    {-FIXME:
+        We arrange the large and small gaps differently from Dietz and Sleator
+        by putting all the large gaps at the beginning instead of distributing
+        them over the relabeled area. However, this should not influence time
+        complexity, as the complexity proof seems to only rely on the fact that
+        gap sizes differ by at most 1. We should check this more thoroughly
+        though.
+    -}
 
     newBeforeCell :: CellRef s -> ST s (CellRef s)
     newBeforeCell ref = do
