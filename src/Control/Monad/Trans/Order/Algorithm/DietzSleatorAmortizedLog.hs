@@ -61,27 +61,10 @@ instance Num Label where
 
     fromInteger = toLabel . fromInteger
 
-instance Real Label where
-
-    toRational (Label word) = toRational word
-
-instance Integral Label where
-
-    Label word1 `quot` Label word2 = Label (word1 `quot` word2)
-
-    Label word1 `rem` Label word2 = Label (word1 `rem` word2)
-
-    Label word1 `quotRem` Label word2 = (Label quotWord, Label remWord) where
-
-        (quotWord, remWord) = word1 `quotRem` word2
-
-    div = quot
-
-    mod = rem
-
-    divMod = quotRem
-
-    toInteger (Label word) = toInteger word
+labelDiff :: Label -> Label -> LabelWord
+labelDiff lbl1 lbl2 = case lbl1 - lbl2 of
+                          Label diff | diff == 0 -> arenaSize
+                                     | otherwise -> diff
 
 initialBaseLabel :: Label
 initialBaseLabel = 0
@@ -115,16 +98,16 @@ rawAlgorithm = RawAlgorithm {
 newAfterCell :: CellRef s -> ST s (CellRef s)
 newAfterCell ref = do
     relabel ref
-    cell <- readSTRef ref
-    let nextRef = next cell
-    nextCell <- readSTRef nextRef
+    lbl <- label <$> readSTRef ref
+    nextRef <- next <$> readSTRef ref
+    nextLbl <- label <$> readSTRef nextRef
     newRef <- newSTRef $ Cell {
-        label = label cell + (label nextCell - label cell) `div` 2,
+        label = lbl + Label (labelDiff nextLbl lbl `div` 2),
         next  = nextRef,
         prev  = ref
     }
-    writeSTRef ref     (cell     { next = newRef })
-    writeSTRef nextRef (nextCell { prev = newRef })
+    modifySTRef ref     (\ cell     -> cell     { next = newRef })
+    modifySTRef nextRef (\ nextCell -> nextCell { prev = newRef })
     return newRef
 
 relabel :: CellRef s -> ST s ()
@@ -132,9 +115,7 @@ relabel startRef = do
     startCell <- readSTRef startRef
     let delimSearch ref gapCount = do
             cell <- readSTRef ref
-            let gapSum = case label cell - label startCell of
-                             Label diff | diff == 0 -> arenaSize
-                                        | otherwise -> diff
+            let gapSum = labelDiff (label cell) (label startCell)
             if gapSum <= gapCount ^ 2
                 then delimSearch (next cell) (succ gapCount)
                 else return (ref, gapSum, gapCount)
