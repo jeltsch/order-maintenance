@@ -14,6 +14,7 @@ module Control.Monad.Trans.Order.Algorithm (
 
 ) where
 
+import Control.Monad.ST
 import Control.Monad.Trans.Order.Raw
 import Control.Monad.Trans.Order.Algorithm.Type
 import Control.Monad.Trans.Order.Algorithm.Dumb
@@ -84,7 +85,9 @@ import Control.Monad.Trans.Order.Algorithm.DietzSleatorAmortizedLog
 defaultAlgorithm :: Algorithm
 defaultAlgorithm = dietzSleatorAmortizedLog
 
-withRawAlgorithm :: Algorithm -> (forall a . RawAlgorithm a s -> r) -> r
+withRawAlgorithm :: Algorithm
+                 -> (forall a . RawAlgorithm a s -> ST s r)
+                 -> ST s r
 withRawAlgorithm (Algorithm rawAlg) cont = cont rawAlg
 
 -- * Specific algorithms
