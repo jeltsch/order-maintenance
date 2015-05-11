@@ -48,11 +48,15 @@ initialID = 1
 
 instance Show OrderComp where
 
-    show (OrderComp stmts) = unlines $ zipWith showStmt stmts nextIds where
+    show (OrderComp stmts)
+        | null stmts = "no statements"
+        | otherwise  = str ++ concatMap (", " ++) strs where
 
-        newElemCounts = map newElemCount stmts
+            str : strs = zipWith showStmt stmts nextIds
 
-        nextIds = scanl (+) 0 newElemCounts
+            newElemCounts = map newElemCount stmts
+
+            nextIds = scanl (+) initialID newElemCounts
 
 data CompGenState = CompGenState (Set Int) Int
 
@@ -106,17 +110,17 @@ newElemCount (NewBefore id) = 1
 newElemCount (Delete id)    = 0
 
 showStmt :: OrderStmt -> Int -> String
-showStmt NewMinimum     = showNewStmt "at the beginning"
-showStmt NewMaximum     = showNewStmt "at the end"
-showStmt (NewAfter id)  = showNewStmt ("after " ++ showElem id)
-showStmt (NewBefore id) = showNewStmt ("before " ++ showElem id)
-showStmt (Delete id)    = const ("Delete " ++ showElem id)
+showStmt NewMinimum     = showNewStmt "newMinimum"
+showStmt NewMaximum     = showNewStmt "newMaximum"
+showStmt (NewAfter id)  = showNewStmt ("newAfter " ++ showElem id)
+showStmt (NewBefore id) = showNewStmt ("newBefore " ++ showElem id)
+showStmt (Delete id)    = const ("delete " ++ showElem id)
 
 showNewStmt :: String -> Int -> String
-showNewStmt pos nextId = "Create " ++ showElem nextId ++ " " ++ pos
+showNewStmt base nextId = base ++ " -> " ++ showElem nextId
 
 showElem :: Int -> String
-showElem id = "x" ++ show id
+showElem id = "x_" ++ show id
 
 genStmt :: StateT CompGenState Gen OrderStmt
 genStmt = do
