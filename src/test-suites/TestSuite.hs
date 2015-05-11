@@ -178,7 +178,7 @@ dumb = NamedAlgorithm "Dumb" Algorithm.dumb
 
 dietzSleatorAmortizedLog :: NamedAlgorithm
 dietzSleatorAmortizedLog = NamedAlgorithm
-                               "Dietz and Sleator, O(log n) amortized time"
+                               "Dietz and Sleator O(log n) amortized time"
                                Algorithm.dietzSleatorAmortizedLog
 
 -- * Test pattern
