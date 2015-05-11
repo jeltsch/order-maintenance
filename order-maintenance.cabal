@@ -57,4 +57,20 @@ Library
                    Control.Monad.Trans.Order.Lazy.Internals
                    Control.Monad.Trans.Order.Raw
 
-    HS-Source-Dirs: src
+    HS-Source-Dirs: src/library
+
+Test-Suite tests
+
+    Type: detailed-0.9
+
+    Build-Depends: base                  >= 3.0  && < 5,
+                   Cabal                 >= 1.16 && < 2,
+                   cabal-test-quickcheck >= 0.1  && < 0.2,
+                   QuickCheck            >= 2.6  && < 3,
+                   order-maintenance     == 0.0.0.0
+
+    Default-Language: Haskell2010
+
+    Test-Module: TestSuite
+
+    HS-Source-Dirs: src/test-suites
