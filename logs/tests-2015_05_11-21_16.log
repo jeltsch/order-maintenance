@@ -1,0 +1,10 @@
+Test suite tests: RUNNING...
+Test case Dumb vs. Dietz and Sleator O(log n) amortized time: Fail
+"Falsifiable (after 29 tests and 2 shrinks): newMinimum -> x_1, newAfter x_1
+-> x_2, newMaximum -> x_3, newAfter x_2 -> x_4, newBefore x_4 -> x_5,
+newMaximum -> x_6, newBefore x_1 -> x_7, newAfter x_4 -> x_8, newMaximum ->
+x_9, newBefore x_9 -> x_10, newBefore x_4 -> x_11, delete x_10, newBefore x_1
+-> x_12, newMaximum -> x_13, delete x_4, newMaximum -> x_14, newMaximum ->
+x_15, newMaximum -> x_16"
+Test suite tests: FAIL
+Test suite logged to: dist/test/order-maintenance-0.0.0.0-tests.log
