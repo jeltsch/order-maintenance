@@ -20,22 +20,22 @@ module Control.Monad.Trans.Order.Raw (
 import Control.Monad.ST
 import Data.STRef
 
-type RawOrder o s = STRef s (OrderCell o s)
+type RawOrder a s = STRef s (OrderCell a s)
 
-type family OrderCell o s
+type family OrderCell a s
 
-type RawElement o s = STRef s (ElementCell o s)
+type RawElement a s = STRef s (ElementCell a s)
 
-type family ElementCell o s
+type family ElementCell a s
 
-data RawAlgorithm o s = RawAlgorithm {
-    newOrder        :: ST s (RawOrder o s),
-    compareElements :: RawElement o s -> RawElement o s -> ST s Ordering,
-    newMinimum      :: RawOrder o s -> ST s (RawElement o s),
-    newMaximum      :: RawOrder o s -> ST s (RawElement o s),
-    newAfter        :: RawElement o s -> RawOrder o s -> ST s (RawElement o s),
-    newBefore       :: RawElement o s -> RawOrder o s -> ST s (RawElement o s),
-    delete          :: RawElement o s -> RawOrder o s -> ST s ()
+data RawAlgorithm a s = RawAlgorithm {
+    newOrder        :: ST s (RawOrder a s),
+    compareElements :: RawElement a s -> RawElement a s -> ST s Ordering,
+    newMinimum      :: RawOrder a s -> ST s (RawElement a s),
+    newMaximum      :: RawOrder a s -> ST s (RawElement a s),
+    newAfter        :: RawElement a s -> RawOrder a s -> ST s (RawElement a s),
+    newBefore       :: RawElement a s -> RawOrder a s -> ST s (RawElement a s),
+    delete          :: RawElement a s -> RawOrder a s -> ST s ()
 }
 {-FIXME:
     If we ever allow users to plug in their own algorithms, we have to flag the
