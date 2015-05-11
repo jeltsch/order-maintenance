@@ -1,0 +1,11 @@
+Test suite tests: RUNNING...
+Test case Dumb vs. Dietz and Sleator O(log n) amortized time: Fail
+"Falsifiable (after 31 tests and 1 shrink): Create x0 at the endCreate x1 at
+the beginningCreate x2 after x1Delete x2Delete x3Create x3 after x1Create x4
+at the endCreate x5 after x1Create x6 after x4Create x7 before x7Create x8
+before x5Create x9 before x5Delete x6Create x10 at the endCreate x11 before
+x5Create x12 after x5Create x13 after x4Create x14 after x10Create x15 after
+x12Delete x1Create x16 before x13Create x17 after x9Create x18 after x16Create
+x19 after x10"
+Test suite tests: FAIL
+Test suite logged to: dist/test/order-maintenance-0.0.0.0-tests.log
