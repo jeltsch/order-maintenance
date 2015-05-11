@@ -43,8 +43,8 @@ tests = return $ map (uncurry comparisonTest) [
 
 newtype OrderComp = OrderComp [OrderStmt]
 
-initialId :: Int
-initialId = 1
+initialID :: Int
+initialID = 1
 
 instance Show OrderComp where
 
@@ -61,7 +61,7 @@ instance Arbitrary OrderComp where
     arbitrary = sized $ \ size -> do
                     len <- choose (0, size)
                     stmts <- evalStateT (replicateM len genStmt)
-                                        (CompGenState Set.empty initialId)
+                                        (CompGenState Set.empty initialID)
                     return (OrderComp stmts)
 
     shrink (OrderComp stmts) = if null stmts
@@ -83,7 +83,7 @@ execComp :: RawAlgorithm a s -> OrderComp -> ST s ComparisonMatrix
 execComp rawAlg (OrderComp stmts) = do
     rawOrder <- newOrder rawAlg
     let execStmts = mapM_ (execStmt rawAlg rawOrder) stmts
-    let initState = CompExecState Map.empty initialId
+    let initState = CompExecState Map.empty initialID
     ((), CompExecState elemMap _) <- runStateT execStmts initState
     let idElemPairs = Map.toList elemMap
     let comparisonPair (id1, elem1) (id2, elem2) = do
