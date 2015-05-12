@@ -36,7 +36,7 @@ import Distribution.TestSuite.QuickCheck
 
 tests :: IO [Test]
 tests = return $ map (uncurry comparisonTest) [
-            (dumb, dietzSleatorAmortizedLogWithSize8)
+            (dumb, dietzSleatorAmortizedLogWithSize14)
         ]
 
 -- * Order computations
@@ -181,12 +181,12 @@ data NamedAlgorithm = NamedAlgorithm String Algorithm
 dumb :: NamedAlgorithm
 dumb = NamedAlgorithm "Dumb" Algorithm.dumb
 
-dietzSleatorAmortizedLogWithSize8 :: NamedAlgorithm
-dietzSleatorAmortizedLogWithSize8 = NamedAlgorithm name alg where
+dietzSleatorAmortizedLogWithSize14 :: NamedAlgorithm
+dietzSleatorAmortizedLogWithSize14 = NamedAlgorithm name alg where
 
     name = "Dietz and Sleator O(log n) amortized time"
 
-    alg = Algorithm.dietzSleatorAmortizedLogWithSize 8
+    alg = Algorithm.dietzSleatorAmortizedLogWithSize 14
 
 -- * Test pattern
 
