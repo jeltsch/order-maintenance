@@ -109,18 +109,18 @@ instance Ord (Element o) where
 
         ordering = unsafePerformIO $
                    withRawOrder gate $ \ rawOrder ->
-                   stToIO $ compareElements rawAlg rawElem1 rawElem2 rawOrder
+                   stToIO $ compareElements rawAlg rawOrder rawElem1 rawElem2
 {-FIXME:
     Introduce the safety measures for unsafePerformIO. It should not matter how
     many times the I/O is performed.
 -}
 
-fromRaw :: Monad m
-        => (RawAlgorithm o RealWorld
-                -> RawOrder o RealWorld
-                -> ST RealWorld (RawElement o RealWorld))
-        -> OrderT o m (Element o)
-fromRaw rawNew = OrderT $ StateT (return . explicitStateNew) where
+fromRawNew :: Monad m
+           => (RawAlgorithm o RealWorld
+                   -> RawOrder o RealWorld
+                   -> ST RealWorld (RawElement o RealWorld))
+           -> OrderT o m (Element o)
+fromRawNew rawNew = OrderT $ StateT (return . explicitStateNew) where
 
     explicitStateNew order@(OrderRep rawAlg gate) = output where
 
@@ -131,7 +131,7 @@ fromRaw rawNew = OrderT $ StateT (return . explicitStateNew) where
                      mkWeakIORef (IORef rawElem)
                                  (withRawOrder gate $ \ rawOrder ->
                                   stToIO $
-                                  delete rawAlg rawElem rawOrder)
+                                  delete rawAlg rawOrder rawElem)
                      return (Element rawAlg gate rawElem, order)
     {-FIXME:
         Introduce the safety measures for unsafePerformIO. The I/O must occur only
@@ -139,13 +139,24 @@ fromRaw rawNew = OrderT $ StateT (return . explicitStateNew) where
     -}
 
 newMinimum :: Monad m => OrderT o m (Element o)
-newMinimum = fromRaw Raw.newMinimum
+newMinimum = fromRawNew Raw.newMinimum
 
 newMaximum :: Monad m => OrderT o m (Element o)
-newMaximum = fromRaw Raw.newMaximum
+newMaximum = fromRawNew Raw.newMaximum
 
 newAfter :: Monad m => Element o -> OrderT o m (Element o)
-newAfter (~(Element _ _ rawElem)) = fromRaw (flip Raw.newAfter rawElem)
+newAfter (~(Element _ _ rawElem)) = fromRawNeighbor Raw.newAfter rawElem
 
 newBefore :: Monad m => Element o -> OrderT o m (Element o)
-newBefore (~(Element _ _ rawElem)) = fromRaw (flip Raw.newBefore rawElem)
+newBefore (~(Element _ _ rawElem)) = fromRawNeighbor Raw.newBefore rawElem
+
+fromRawNeighbor :: Monad m
+                => (RawAlgorithm o RealWorld
+                        -> RawOrder o RealWorld
+                        -> RawElement o RealWorld
+                        -> ST RealWorld (RawElement o RealWorld))
+                -> RawElement o RealWorld
+                -> OrderT o m (Element o)
+fromRawNeighbor rawNewNeighbor rawElem = fromRawNew rawNew where
+
+    rawNew rawAlg rawOrder = rawNewNeighbor rawAlg rawOrder rawElem

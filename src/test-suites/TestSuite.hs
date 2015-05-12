@@ -91,7 +91,7 @@ execComp rawAlg (OrderComp stmts) = do
     ((), CompExecState elemMap _) <- runStateT execStmts initState
     let idElemPairs = Map.toList elemMap
     let comparisonPair (id1, elem1) (id2, elem2) = do
-            ordering <- compareElements rawAlg elem1 elem2 rawOrder
+            ordering <- compareElements rawAlg rawOrder elem1 elem2
             return ((id1, id2), ordering)
     comparisonPairs <- sequence $ liftM2 comparisonPair idElemPairs idElemPairs
     return $ Map.fromList comparisonPairs
@@ -166,11 +166,12 @@ execStmt rawAlg rawOrder = exec where
 
     execNewNeighbor newNeighbor id = do
         CompExecState elemMap _ <- get
-        execNew $ flip newNeighbor (elemMap Map.! id)
+        let new rawAlg rawOrder = newNeighbor rawAlg rawOrder (elemMap Map.! id)
+        execNew new
 
     execDelete id = do
         CompExecState elemMap nextId <- get
-        lift $ delete rawAlg (elemMap Map.! id) rawOrder
+        lift $ delete rawAlg rawOrder (elemMap Map.! id)
         put $ CompExecState (Map.delete id elemMap) nextId
 
 -- * Named algorithms
