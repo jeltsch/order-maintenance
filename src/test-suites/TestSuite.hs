@@ -93,7 +93,7 @@ execComp rawAlg (OrderComp stmts) = do
     let comparisonPair (id1, elem1) (id2, elem2) = do
             ordering <- compareElements rawAlg elem1 elem2
             return ((id1, id2), ordering)
-    comparisonPairs <-  sequence $ liftM2 comparisonPair idElemPairs idElemPairs
+    comparisonPairs <- sequence $ liftM2 comparisonPair idElemPairs idElemPairs
     return $ Map.fromList comparisonPairs
 
 data OrderStmt = NewMinimum
