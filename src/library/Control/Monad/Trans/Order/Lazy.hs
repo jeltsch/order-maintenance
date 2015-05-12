@@ -77,6 +77,8 @@ evalOrderWith alg order = runIdentity (evalOrderTWith alg order)
 
 -- * The OrderT monad transformer
 
+-- NOTE: OrderT is imported from Control.Monad.Trans.Order.Lazy.Internals.
+
 evalOrderT :: Monad m => (forall o . OrderT o m a) -> m a
 evalOrderT = evalOrderTWith defaultAlgorithm
 
