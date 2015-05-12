@@ -30,7 +30,7 @@ type family ElementCell a s
 
 data RawAlgorithm a s = RawAlgorithm {
     newOrder        :: ST s (RawOrder a s),
-    compareElements :: RawElement a s -> RawElement a s -> ST s Ordering,
+    compareElements :: RawElement a s -> RawElement a s -> RawOrder a s -> ST s Ordering,
     newMinimum      :: RawOrder a s -> ST s (RawElement a s),
     newMaximum      :: RawOrder a s -> ST s (RawElement a s),
     newAfter        :: RawElement a s -> RawOrder a s -> ST s (RawElement a s),

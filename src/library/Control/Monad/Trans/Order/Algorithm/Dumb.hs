@@ -13,7 +13,6 @@ import Control.Monad.Trans.Order.Raw
 
 -- Data
 
-import           Data.Function
 import           Data.Ratio
 import           Data.STRef
 import qualified Data.Set as Set
@@ -35,7 +34,10 @@ type PureElement = Rational
 rawAlgorithm :: RawAlgorithm Dumb s
 rawAlgorithm = RawAlgorithm {
     newOrder        = newSTRef Set.empty,
-    compareElements = liftA2 compare `on` readSTRef,
+    compareElements = \ rawElem1 rawElem2 _ -> do
+                          pureElem1 <- readSTRef rawElem1
+                          pureElem2 <- readSTRef rawElem2
+                          return (compare pureElem1 pureElem2),
     newMinimum      = fromPureInsert pureInsertMinimum,
     newMaximum      = fromPureInsert pureInsertMaximum,
     newAfter        = relative fromPureInsert pureInsertAfter,

@@ -91,7 +91,7 @@ execComp rawAlg (OrderComp stmts) = do
     ((), CompExecState elemMap _) <- runStateT execStmts initState
     let idElemPairs = Map.toList elemMap
     let comparisonPair (id1, elem1) (id2, elem2) = do
-            ordering <- compareElements rawAlg elem1 elem2
+            ordering <- compareElements rawAlg elem1 elem2 rawOrder
             return ((id1, id2), ordering)
     comparisonPairs <- sequence $ liftM2 comparisonPair idElemPairs idElemPairs
     return $ Map.fromList comparisonPairs

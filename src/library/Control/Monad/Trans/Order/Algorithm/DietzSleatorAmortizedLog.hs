@@ -65,11 +65,15 @@ rawAlgorithmWithSize size
                                    next  = ref,
                                    prev  = ref
                                 },
-              compareElements = \ ref1 ref2 -> do
+              compareElements = \ ref1 ref2 baseRef -> do
                                     cell1 <- readSTRef ref1
                                     cell2 <- readSTRef ref2
-                                    return $ compare (label cell1)
-                                                     (label cell2),
+                                    baseCell <- readSTRef baseRef
+                                    let offset1 = labelDiff (label cell1)
+                                                            (label baseCell)
+                                    let offset2 = labelDiff (label cell2)
+                                                            (label baseCell)
+                                    return $ compare offset1 offset2,
               newMinimum      = newAfterCell,
               newMaximum      = newBeforeCell,
               newAfter        = const . newAfterCell,

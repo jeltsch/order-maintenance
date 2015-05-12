@@ -90,26 +90,26 @@ force = OrderT $ get >>= \ order -> order `seq` return ()
 
 -- * Elements
 
-data Element o = Element (RawElement o RealWorld)
-                         (RawAlgorithm o RealWorld)
-                         Lock
+data Element o = Element (RawAlgorithm o RealWorld)
+                         (Gate o)
+                         (RawElement o RealWorld)
 -- NOTE: Evaluation of the Element constructor triggers the I/O for insertions.
 
 instance Eq (Element o) where
 
-    (==) (Element rawElem1 (RawAlgorithm _ _ _ _ _ _ _) _)
-         (Element rawElem2 _                            _) = equal where
+    (==) (Element (RawAlgorithm _ _ _ _ _ _ _) _ rawElem1)
+         (Element _                            _ rawElem2) = equal where
 
         equal = rawElem1 == rawElem2
 
 instance Ord (Element o) where
 
-    compare (Element rawElem1 rawAlg lock)
-            (Element rawElem2 _      _)    = ordering where
+    compare (Element rawAlg gate rawElem1)
+            (Element _      _    rawElem2) = ordering where
 
         ordering = unsafePerformIO $
-                   criticalSection lock $
-                   stToIO $ compareElements rawAlg rawElem1 rawElem2
+                   withRawOrder gate $ \ rawOrder ->
+                   stToIO $ compareElements rawAlg rawElem1 rawElem2 rawOrder
 {-FIXME:
     Introduce the safety measures for unsafePerformIO. It should not matter how
     many times the I/O is performed.
@@ -122,17 +122,17 @@ fromRaw :: Monad m
         -> OrderT o m (Element o)
 fromRaw rawNew = OrderT $ StateT (return . explicitStateNew) where
 
-    explicitStateNew order@(OrderRep rawOrder rawAlg lock) = output where
+    explicitStateNew order@(OrderRep rawAlg gate) = output where
 
         output = unsafePerformIO $
-                 criticalSection lock $
+                 withRawOrder gate $ \ rawOrder ->
                  do
                      rawElem <- stToIO $ rawNew rawAlg rawOrder
                      mkWeakIORef (IORef rawElem)
-                                 (criticalSection lock $
+                                 (withRawOrder gate $ \ rawOrder ->
                                   stToIO $
                                   delete rawAlg rawElem rawOrder)
-                     return (Element rawElem rawAlg lock, order)
+                     return (Element rawAlg gate rawElem, order)
     {-FIXME:
         Introduce the safety measures for unsafePerformIO. The I/O must occur only
         once.
@@ -145,7 +145,7 @@ newMaximum :: Monad m => OrderT o m (Element o)
 newMaximum = fromRaw Raw.newMaximum
 
 newAfter :: Monad m => Element o -> OrderT o m (Element o)
-newAfter (~(Element rawElem _ _)) = fromRaw (flip Raw.newAfter rawElem)
+newAfter (~(Element _ _ rawElem)) = fromRaw (flip Raw.newAfter rawElem)
 
 newBefore :: Monad m => Element o -> OrderT o m (Element o)
-newBefore (~(Element rawElem _ _)) = fromRaw (flip Raw.newBefore rawElem)
+newBefore (~(Element _ _ rawElem)) = fromRaw (flip Raw.newBefore rawElem)

@@ -6,10 +6,10 @@ module Control.Monad.Trans.Order.Lazy.Internals (
     OrderRep (OrderRep),
     emptyOrderRep,
 
-    -- * Locks
+    -- * Gates
 
-    Lock,
-    criticalSection
+    Gate,
+    withRawOrder
 
 ) where
 
@@ -41,28 +41,26 @@ newtype OrderT o m a = OrderT (StateT (OrderRep o) m a) deriving (
     MonadIO)
     -- FIXME: Should we also have a MonadFix instance?
 
-data OrderRep o = OrderRep (RawOrder o RealWorld)
-                           (RawAlgorithm o RealWorld)
-                           Lock
+data OrderRep o = OrderRep (RawAlgorithm o RealWorld) (Gate o)
 -- FIXME: Maybe use OrderedSet instead of OrderRep.
 -- NOTE: Evaluation of the OrderRep constructor triggers the I/O for insertions.
 
 emptyOrderRep :: (forall s . RawAlgorithm o s) -> OrderRep o
 emptyOrderRep rawAlg = unsafePerformIO $ do
     rawOrder <- stToIO (newOrder rawAlg)
-    lock <- newLock
-    return (OrderRep rawOrder rawAlg lock)
+    gate <- newGate rawOrder
+    return (OrderRep rawAlg gate)
 {-FIXME:
     Introduce the safety measures for unsafePerformIO. It should not matter
     how many times the I/O is performed.
 -}
 
--- * Locks
+-- * Gates
 
-type Lock = MVar ()
+newtype Gate a = Gate (MVar (RawOrder a RealWorld))
 
-newLock :: IO Lock
-newLock = newEmptyMVar
+newGate :: RawOrder a RealWorld -> IO (Gate a)
+newGate = fmap Gate . newMVar
 
-criticalSection :: Lock -> IO a -> IO a
-criticalSection lock act = bracket_ (putMVar lock ()) (takeMVar lock) act
+withRawOrder :: Gate a -> (RawOrder a RealWorld -> IO r) -> IO r
+withRawOrder (Gate mVar) cont = bracket (takeMVar mVar) (putMVar mVar) cont
