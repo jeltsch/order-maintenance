@@ -42,10 +42,6 @@ Library
                         RankNTypes
                         TypeFamilies
 
-    if impl(ghc >= 7.8) {
-        Default-Extensions: AutoDeriveTypeable
-    }
-
     Exposed-Modules: Control.Monad.Trans.Order
                      Control.Monad.Trans.Order.Algorithm
                      Control.Monad.Trans.Order.Lazy
