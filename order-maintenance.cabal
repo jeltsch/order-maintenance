@@ -1,5 +1,5 @@
 Name:          order-maintenance
-Version:       0.0.0.0
+Version:       0.0.1.0
 Cabal-Version: >= 1.16
 Build-Type:    Simple
 License:       BSD3
@@ -9,7 +9,7 @@ Author:        Wolfgang Jeltsch
 Maintainer:    wolfgang@cs.ioc.ee
 Stability:     provisional
 Homepage:      http://darcs.wolfgang.jeltsch.info/haskell/order-maintenance
-Package-URL:   http://hackage.haskell.org/packages/archive/order-maintenance/0.0.0.0/order-maintenance-0.0.0.0.tar.gz
+Package-URL:   http://hackage.haskell.org/packages/archive/order-maintenance/0.0.1.0/order-maintenance-0.0.1.0.tar.gz
 Synopsis:      Algorithms for the order maintenance problem with a safe
                interface
 Description:   This package is about order maintenance.
@@ -25,7 +25,7 @@ Source-Repository this
 
     Type:     darcs
     Location: http://darcs.wolfgang.jeltsch.info/haskell/order-maintenance/main
-    Tag:      order-maintenance-0.0.0.0
+    Tag:      order-maintenance-0.0.1.0
 
 Library
 
@@ -65,7 +65,7 @@ Test-Suite tests
                    containers            >= 0.5  && < 0.6,
                    QuickCheck            >= 2.6  && < 3,
                    transformers          >= 0.3  && < 0.5,
-                   order-maintenance     == 0.0.0.0
+                   order-maintenance     == 0.0.1.0
 
     Default-Language: Haskell2010
 
