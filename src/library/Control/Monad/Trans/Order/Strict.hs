@@ -10,6 +10,7 @@ module Control.Monad.Trans.Order.Strict (
 
     OrderT,
     evalOrderT,
+    evalOrderTWith,
     force,
 
     -- * Elements

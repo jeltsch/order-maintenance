@@ -10,6 +10,7 @@ module Control.Monad.Trans.Order.Lazy (
 
     OrderT,
     evalOrderT,
+    evalOrderTWith,
     force,
 
     -- * Elements
