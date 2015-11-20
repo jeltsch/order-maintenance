@@ -1,4 +1,4 @@
-module Control.Monad.Trans.Order.Algorithm.DietzSleatorAmortizedLog (
+module Data.Order.Algorithm.DietzSleatorAmortizedLog (
 
     algorithm,
     algorithmWithSize
@@ -10,14 +10,14 @@ module Control.Monad.Trans.Order.Algorithm.DietzSleatorAmortizedLog (
 import Control.Applicative
 import Control.Monad
 import Control.Monad.ST
-import Control.Monad.Trans.Order.Algorithm.Type
-import Control.Monad.Trans.Order.Raw
 
 -- Data
 
 import Data.STRef
 import Data.Word
 import Data.Bits
+import Data.Order.Algorithm.Type
+import Data.Order.Raw
 
 algorithm :: Algorithm
 algorithm = algorithmWithSize defaultSize

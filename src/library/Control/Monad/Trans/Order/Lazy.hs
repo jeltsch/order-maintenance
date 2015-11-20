@@ -15,7 +15,6 @@ module Control.Monad.Trans.Order.Lazy (
 
     -- * Elements
 
-    Element,
     newMinimum,
     newMaximum,
     newAfter,
@@ -25,28 +24,23 @@ module Control.Monad.Trans.Order.Lazy (
 
 -- Control
 
-import           Control.Monad.ST
-import           Control.Monad.Trans.State.Lazy
-import           Control.Monad.Trans.Order.Raw
-                     hiding (newMinimum, newMaximum, newAfter, newBefore)
-import qualified Control.Monad.Trans.Order.Raw
-                     as Raw
-import           Control.Monad.Trans.Order.Lazy.Internals
-import           Control.Monad.Trans.Order.Algorithm
-import           Control.Monad.Trans.Order.Algorithm.Type
+import Control.Monad.Trans.State.Lazy
+import Control.Monad.Trans.Order.Lazy.Type
 
 -- Data
 
-import Data.Functor.Identity
-import Data.IORef
+import           Data.Functor.Identity
+import           Data.Order.Algorithm
+import           Data.Order.Algorithm.Type
+import           Data.Order.Element
+import           Data.Order.Internals
+                 hiding (newMinimum, newMaximum, newAfter, newBefore)
+import qualified Data.Order.Internals as Internals
+import           Data.Order.Raw (RawAlgorithm)
 
 -- System
 
 import System.IO.Unsafe
-
--- GHC
-
-import GHC.IORef -- for converting from STRef RealWorld to IORef
 
 {-FIXME:
     Introduce conversions between the lazy and the strict variant, similar to
@@ -78,7 +72,7 @@ evalOrderWith alg order = runIdentity (evalOrderTWith alg order)
 
 -- * The OrderT monad transformer
 
--- NOTE: OrderT is imported from Control.Monad.Trans.Order.Lazy.Internals.
+-- NOTE: OrderT is imported from Control.Monad.Trans.Order.Lazy.Type.
 
 evalOrderT :: Monad m => (forall o . OrderT o m a) -> m a
 evalOrderT = evalOrderTWith defaultAlgorithm
@@ -93,73 +87,27 @@ force = OrderT $ get >>= \ order -> order `seq` return ()
 
 -- * Elements
 
-data Element o = Element (RawAlgorithm o RealWorld)
-                         (Gate o)
-                         (RawElement o RealWorld)
--- NOTE: Evaluation of the Element constructor triggers the I/O for insertions.
-
-instance Eq (Element o) where
-
-    (==) (Element (RawAlgorithm _ _ _ _ _ _ _) _ rawElem1)
-         (Element _                            _ rawElem2) = equal where
-
-        equal = rawElem1 == rawElem2
-
-instance Ord (Element o) where
-
-    compare (Element rawAlg gate rawElem1)
-            (Element _      _    rawElem2) = ordering where
-
-        ordering = unsafePerformIO $
-                   withRawOrder gate $ \ rawOrder ->
-                   stToIO $ compareElements rawAlg rawOrder rawElem1 rawElem2
-{-FIXME:
-    Introduce the safety measures for unsafePerformIO. It should not matter how
-    many times the I/O is performed.
--}
-
-fromRawNew :: Monad m
-           => (RawAlgorithm o RealWorld
-                   -> RawOrder o RealWorld
-                   -> ST RealWorld (RawElement o RealWorld))
-           -> OrderT o m (Element o)
-fromRawNew rawNew = OrderT $ StateT (return . explicitStateNew) where
-
-    explicitStateNew order@(OrderRep rawAlg gate) = output where
-
-        output = unsafePerformIO $
-                 withRawOrder gate $ \ rawOrder ->
-                 do
-                     rawElem <- stToIO $ rawNew rawAlg rawOrder
-                     mkWeakIORef (IORef rawElem)
-                                 (withRawOrder gate $ \ rawOrder ->
-                                  stToIO $
-                                  delete rawAlg rawOrder rawElem)
-                     return (Element rawAlg gate rawElem, order)
-    {-FIXME:
-        Introduce the safety measures for unsafePerformIO. The I/O must occur only
-        once.
-    -}
-
 newMinimum :: Monad m => OrderT o m (Element o)
-newMinimum = fromRawNew Raw.newMinimum
+newMinimum = fromRepNew Internals.newMinimum
 
 newMaximum :: Monad m => OrderT o m (Element o)
-newMaximum = fromRawNew Raw.newMaximum
+newMaximum = fromRepNew Internals.newMaximum
 
 newAfter :: Monad m => Element o -> OrderT o m (Element o)
-newAfter (~(Element _ _ rawElem)) = fromRawNeighbor Raw.newAfter rawElem
+newAfter elem = fromRepNew (Internals.newAfter elem)
 
 newBefore :: Monad m => Element o -> OrderT o m (Element o)
-newBefore (~(Element _ _ rawElem)) = fromRawNeighbor Raw.newBefore rawElem
+newBefore elem = fromRepNew (Internals.newBefore elem)
 
-fromRawNeighbor :: Monad m
-                => (RawAlgorithm o RealWorld
-                        -> RawOrder o RealWorld
-                        -> RawElement o RealWorld
-                        -> ST RealWorld (RawElement o RealWorld))
-                -> RawElement o RealWorld
-                -> OrderT o m (Element o)
-fromRawNeighbor rawNewNeighbor rawElem = fromRawNew rawNew where
+fromRepNew :: Monad m
+           => (OrderRep o -> IO (Element o))
+           -> OrderT o m (Element o)
+fromRepNew repNew = OrderT $ state statefulNew where
 
-    rawNew rawAlg rawOrder = rawNewNeighbor rawAlg rawOrder rawElem
+    statefulNew orderRep = (elem, elem `seq` orderRep) where
+
+        elem = unsafePerformIO $ repNew orderRep
+        {-FIXME:
+            Introduce the safety measures for unsafePerformIO. The I/O must
+            occur only once.
+        -}

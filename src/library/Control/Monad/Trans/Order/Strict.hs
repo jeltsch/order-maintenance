@@ -34,23 +34,18 @@ import           Control.Monad
 import           Control.Applicative
 import           Control.Monad.Trans.Class
 import           Control.Monad.IO.Class
-import qualified Control.Monad.Trans.State.Lazy
-                     as Lazy
+import qualified Control.Monad.Trans.State.Lazy as Lazy
 import           Control.Monad.Trans.State.Strict
-import           Control.Monad.Trans.Order.Lazy
-                     (Element)
-import qualified Control.Monad.Trans.Order.Lazy
-                     as Lazy
-import           Control.Monad.Trans.Order.Lazy.Internals
-                     (OrderRep, emptyOrderRep)
-import qualified Control.Monad.Trans.Order.Lazy.Internals
-                     as Lazy
-import           Control.Monad.Trans.Order.Algorithm
-import           Control.Monad.Trans.Order.Algorithm.Type
+import qualified Control.Monad.Trans.Order.Lazy as Lazy
+import qualified Control.Monad.Trans.Order.Lazy.Type as Lazy
 
 -- Data
 
 import Data.Functor.Identity
+import Data.Order.Algorithm
+import Data.Order.Algorithm.Type
+import Data.Order.Element
+import Data.Order.Internals (OrderRep, emptyOrderRep)
 
 -- * The Order monad
 
@@ -94,10 +89,10 @@ newMaximum :: Monad m => OrderT o m (Element o)
 newMaximum = lazyToStrictOrderT Lazy.newMaximum
 
 newAfter :: Monad m => Element o -> OrderT o m (Element o)
-newAfter = lazyToStrictOrderT . Lazy.newAfter
+newAfter elem = lazyToStrictOrderT (Lazy.newAfter elem)
 
 newBefore :: Monad m => Element o -> OrderT o m (Element o)
-newBefore = lazyToStrictOrderT . Lazy.newBefore
+newBefore elem = lazyToStrictOrderT (Lazy.newBefore elem)
 
 -- * Converting between lazy and strict OrderT
 

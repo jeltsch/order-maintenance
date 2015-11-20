@@ -1,4 +1,4 @@
-module Control.Monad.Trans.Order.Algorithm.Dumb (
+module Data.Order.Algorithm.Dumb (
 
     algorithm
 
@@ -8,8 +8,6 @@ module Control.Monad.Trans.Order.Algorithm.Dumb (
 
 import Control.Applicative
 import Control.Monad.ST
-import Control.Monad.Trans.Order.Algorithm.Type
-import Control.Monad.Trans.Order.Raw
 
 -- Data
 
@@ -17,6 +15,8 @@ import           Data.Ratio
 import           Data.STRef
 import qualified Data.Set as Set
 import           Data.Set (Set)
+import           Data.Order.Algorithm.Type
+import           Data.Order.Raw
 
 algorithm :: Algorithm
 algorithm = Algorithm rawAlgorithm

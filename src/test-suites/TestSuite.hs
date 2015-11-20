@@ -10,11 +10,6 @@ import           Control.Monad
 import           Control.Monad.ST
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.State
-import           Control.Monad.Trans.Order.Algorithm
-                     (Algorithm, withRawAlgorithm)
-import qualified Control.Monad.Trans.Order.Algorithm
-                     as Algorithm
-import           Control.Monad.Trans.Order.Raw
 
 -- Data
 
@@ -22,6 +17,9 @@ import           Data.Set (Set)
 import qualified Data.Set as Set
 import           Data.Map (Map)
 import qualified Data.Map as Map
+import           Data.Order.Algorithm (Algorithm, withRawAlgorithm)
+import qualified Data.Order.Algorithm as Algorithm
+import           Data.Order.Raw
 
 -- Test
 

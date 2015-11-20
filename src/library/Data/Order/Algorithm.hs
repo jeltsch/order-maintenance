@@ -1,4 +1,4 @@
-module Control.Monad.Trans.Order.Algorithm (
+module Data.Order.Algorithm (
 
     -- * General things
 
@@ -14,13 +14,16 @@ module Control.Monad.Trans.Order.Algorithm (
 
 ) where
 
+-- Control
+
 import Control.Monad.ST
-import Control.Monad.Trans.Order.Raw
-import Control.Monad.Trans.Order.Algorithm.Type
-import Control.Monad.Trans.Order.Algorithm.Dumb
-           as Dumb
-import Control.Monad.Trans.Order.Algorithm.DietzSleatorAmortizedLog
-           as DietzSleatorAmortizedLog
+
+-- Data
+
+import Data.Order.Algorithm.Type
+import Data.Order.Algorithm.Dumb as Dumb
+import Data.Order.Algorithm.DietzSleatorAmortizedLog as DietzSleatorAmortizedLog
+import Data.Order.Raw
 
 {-FIXME:
     Implement the following:

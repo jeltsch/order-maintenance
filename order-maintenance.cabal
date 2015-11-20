@@ -43,15 +43,17 @@ Library
                         TypeFamilies
 
     Exposed-Modules: Control.Monad.Trans.Order
-                     Control.Monad.Trans.Order.Algorithm
                      Control.Monad.Trans.Order.Lazy
-                     Control.Monad.Trans.Order.Raw
                      Control.Monad.Trans.Order.Strict
+                     Data.Order.Algorithm
+                     Data.Order.Element
+                     Data.Order.Raw
 
-    Other-Modules: Control.Monad.Trans.Order.Algorithm.DietzSleatorAmortizedLog
-                   Control.Monad.Trans.Order.Algorithm.Dumb
-                   Control.Monad.Trans.Order.Algorithm.Type
-                   Control.Monad.Trans.Order.Lazy.Internals
+    Other-Modules: Control.Monad.Trans.Order.Lazy.Type
+                   Data.Order.Algorithm.DietzSleatorAmortizedLog
+                   Data.Order.Algorithm.Dumb
+                   Data.Order.Algorithm.Type
+                   Data.Order.Internals
 
     HS-Source-Dirs: src/library
 
