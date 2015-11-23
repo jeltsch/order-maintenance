@@ -14,7 +14,7 @@ Synopsis:      Algorithms for the order maintenance problem with a safe
                interface
 Description:   This package is about order maintenance.
 Category:      Data
-Tested-With:   GHC == 7.10.1
+Tested-With:   GHC == 7.8.3
 
 Source-Repository head
 
