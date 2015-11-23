@@ -28,11 +28,6 @@ newAfter elem = Internals.newAfter elem
 newBefore :: Element Global -> IO (Element Global)
 newBefore elem = Internals.newBefore elem
 
+{-# NOINLINE globalOrderRep #-}
 globalOrderRep :: OrderRep Global
 globalOrderRep = unsafePerformIO $ newOrderRep defaultRawAlg
-{-# NOINLINE globalOrderRep #-}
--- FIXME: Do not put the pragma here if this contradicts our coding style.
-{-FIXME:
-    Introduce the safety measures for unsafePerformIO. The I/O must occur only
-    once.
--}

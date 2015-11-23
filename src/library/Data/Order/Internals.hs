@@ -71,13 +71,9 @@ newOrderRep rawAlg = do
     gate <- newGate rawOrder
     return (OrderRep rawAlg gate)
 
+{-# NOINLINE localOrderRep #-}
 localOrderRep :: (forall s . RawAlgorithm a s) -> OrderRep (Local a)
 localOrderRep rawAlg = unsafePerformIO $ newOrderRep rawAlg
-{-FIXME:
-    Introduce the safety measures for unsafePerformIO. It should not matter how
-    many times the I/O is performed, as emptyOrderRep is only used in the OrderT
-    implementation.
--}
 
 -- * Elements
 
@@ -98,16 +94,15 @@ instance Eq (Element o) where
 
 instance Ord (Element o) where
 
+    {-# NOINLINE compare #-}
     compare (Element rawAlg gate rawElem1)
-            (Element _      _    rawElem2) = ordering where
-
-        ordering = unsafePerformIO $
-                   withRawOrder gate $ \ rawOrder ->
-                   stToIO $ compareElements rawAlg rawOrder rawElem1 rawElem2
-{-FIXME:
-    Introduce the safety measures for unsafePerformIO. It should not matter how
-    many times the I/O is performed.
--}
+            (Element _      _    rawElem2) = unsafePerformIO $
+                                             withRawOrder gate $ \ rawOrder ->
+                                             stToIO $
+                                             compareElements rawAlg
+                                                             rawOrder
+                                                             rawElem1
+                                                             rawElem2
 
 newMinimum :: OrderRep o -> IO (Element o)
 newMinimum = fromRawNew Raw.newMinimum

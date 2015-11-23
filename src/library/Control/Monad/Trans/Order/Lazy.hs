@@ -105,8 +105,5 @@ fromRepNew repNew = OrderT $ state statefulNew where
 
     statefulNew orderRep = (elem, elem `seq` orderRep) where
 
+        {-# NOINLINE elem #-}
         elem = unsafePerformIO $ repNew orderRep
-        {-FIXME:
-            Introduce the safety measures for unsafePerformIO. The I/O must
-            occur only once.
-        -}
