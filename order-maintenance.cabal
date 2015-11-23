@@ -48,6 +48,7 @@ Library
                      Data.Order
                      Data.Order.Algorithm
                      Data.Order.Raw
+                     System.IO.Order
 
     Other-Modules: Control.Monad.Trans.Order.Lazy.Type
                    Data.Order.Algorithm.Type
