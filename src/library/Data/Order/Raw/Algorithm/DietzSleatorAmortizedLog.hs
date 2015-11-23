@@ -1,7 +1,8 @@
-module Data.Order.Algorithm.DietzSleatorAmortizedLog (
+module Data.Order.Raw.Algorithm.DietzSleatorAmortizedLog (
 
-    algorithm,
-    algorithmWithSize
+    Algorithm,
+    rawAlgorithm,
+    rawAlgorithmWithSize
 
 ) where
 
@@ -16,23 +17,13 @@ import Control.Monad.ST
 import Data.STRef
 import Data.Word
 import Data.Bits
-import Data.Order.Algorithm.Type
 import Data.Order.Raw
 
-algorithm :: Algorithm
-algorithm = algorithmWithSize defaultSize
+data Algorithm
 
-defaultSize :: Int
-defaultSize = 63
+type instance OrderCell Algorithm s = Cell s
 
-algorithmWithSize :: Int -> Algorithm
-algorithmWithSize size = Algorithm (rawAlgorithmWithSize size)
-
-data DietzSleatorAmortizedLog
-
-type instance OrderCell DietzSleatorAmortizedLog s = Cell s
-
-type instance ElementCell DietzSleatorAmortizedLog s = Cell s
+type instance ElementCell Algorithm s = Cell s
 
 data Cell s = Cell {
                   label :: Label,
@@ -52,7 +43,13 @@ labelWordSize = 64
 initialBaseLabel :: Label
 initialBaseLabel = Label 0
 
-rawAlgorithmWithSize :: Int -> RawAlgorithm DietzSleatorAmortizedLog s
+rawAlgorithm :: RawAlgorithm Algorithm s
+rawAlgorithm = rawAlgorithmWithSize defaultSize
+
+defaultSize :: Int
+defaultSize = 63
+
+rawAlgorithmWithSize :: Int -> RawAlgorithm Algorithm s
 rawAlgorithmWithSize size
     | size < 0 || size >= labelWordSize
         = error "Control.Monad.Trans.Order.Algorithm.DietzSleatorAmortizedLog: \

@@ -32,7 +32,6 @@ import Control.Monad.Trans.Order.Lazy.Type
 import           Data.Functor.Identity
 import           Data.Order.Algorithm
 import           Data.Order.Algorithm.Type
-import           Data.Order.Element
 import           Data.Order.Internals
                  hiding (newMinimum, newMaximum, newAfter, newBefore)
 import qualified Data.Order.Internals as Internals
@@ -80,7 +79,7 @@ evalOrderT = evalOrderTWith defaultAlgorithm
 evalOrderTWith :: Monad m => Algorithm -> (forall o . OrderT o m a) -> m a
 evalOrderTWith (Algorithm rawAlg) (OrderT stateT) = monad where
 
-    monad = evalStateT stateT (emptyOrderRep rawAlg)
+    monad = evalStateT stateT (localOrderRep rawAlg)
 
 force :: Monad m => OrderT o m ()
 force = OrderT $ get >>= \ order -> order `seq` return ()

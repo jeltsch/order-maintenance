@@ -20,10 +20,13 @@ import Control.Monad.ST
 
 -- Data
 
-import Data.Order.Algorithm.Type
-import Data.Order.Algorithm.Dumb as Dumb
-import Data.Order.Algorithm.DietzSleatorAmortizedLog as DietzSleatorAmortizedLog
-import Data.Order.Raw
+import           Data.Order.Algorithm.Type
+import           Data.Order.Raw
+import           Data.Order.Raw.Algorithm
+import qualified Data.Order.Raw.Algorithm.Dumb
+                 as Dumb
+import qualified Data.Order.Raw.Algorithm.DietzSleatorAmortizedLog
+                 as DietzSleatorAmortizedLog
 
 {-FIXME:
     Implement the following:
@@ -86,7 +89,7 @@ import Data.Order.Raw
 -- NOTE: Algorithm is imported from Data.OrderMaintenance.Algorithm.Type.
 
 defaultAlgorithm :: Algorithm
-defaultAlgorithm = dietzSleatorAmortizedLog
+defaultAlgorithm = Algorithm defaultRawAlgorithm
 
 withRawAlgorithm :: Algorithm
                  -> (forall a . RawAlgorithm a s -> ST s r)
@@ -96,10 +99,11 @@ withRawAlgorithm (Algorithm rawAlg) cont = cont rawAlg
 -- * Specific algorithms
 
 dumb :: Algorithm
-dumb = Dumb.algorithm
+dumb = Algorithm Dumb.rawAlgorithm
 
 dietzSleatorAmortizedLog :: Algorithm
-dietzSleatorAmortizedLog = DietzSleatorAmortizedLog.algorithm
+dietzSleatorAmortizedLog = Algorithm DietzSleatorAmortizedLog.rawAlgorithm
 
 dietzSleatorAmortizedLogWithSize :: Int -> Algorithm
-dietzSleatorAmortizedLogWithSize = DietzSleatorAmortizedLog.algorithmWithSize
+dietzSleatorAmortizedLogWithSize size
+    = Algorithm (DietzSleatorAmortizedLog.rawAlgorithmWithSize size)

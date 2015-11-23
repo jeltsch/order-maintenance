@@ -1,4 +1,10 @@
-module Data.Order.Element (
+module Data.Order (
+
+    -- * Orders
+
+    Global,
+
+    -- * Elements
 
     Element
 
@@ -7,6 +13,12 @@ module Data.Order.Element (
 -- Data
 
 import Data.Order.Internals
+
+-- * Orders
+
+-- NOTE: Global is imported from Data.Order.Internals.
+
+-- * Elements
 
 {-NOTE:
     Element and its class instantiations are imported from Data.Order.Internals.

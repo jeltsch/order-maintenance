@@ -4,7 +4,13 @@ module Data.Order.Internals (
 
     OrderRep (OrderRep),
     newOrderRep,
-    emptyOrderRep,
+    localOrderRep,
+
+    -- * Algorithms of orders
+
+    AlgorithmOf,
+    Local,
+    Global,
 
     -- * Elements
 
@@ -28,6 +34,7 @@ import           Data.IORef
 import           Data.Order.Raw
                  hiding (newMinimum, newMaximum, newAfter, newBefore)
 import qualified Data.Order.Raw as Raw
+import           Data.Order.Raw.Algorithm
 
 -- System
 
@@ -37,23 +44,35 @@ import System.IO.Unsafe
 
 import GHC.IORef -- for converting from STRef RealWorld to IORef
 
+-- * Algorithms of orders
+
+type family AlgorithmOf o
+
+data Local a
+
+type instance AlgorithmOf (Local a) = a
+
+data Global
+
+type instance AlgorithmOf Global = DefaultAlgorithm
+
 -- * Order representations
 
-data OrderRep o = OrderRep (RawAlgorithm o RealWorld) (Gate o)
--- FIXME: Maybe use OrderedSet instead of OrderToken.
+data OrderRep o = OrderRep (RawAlgorithm (AlgorithmOf o) RealWorld)
+                           (Gate (AlgorithmOf o))
 {-NOTE:
     When using OrderT, evaluation of the OrderRep constructor triggers the I/O
     for insertions.
 -}
 
-newOrderRep :: (forall s . RawAlgorithm o s) -> IO (OrderRep o)
+newOrderRep :: (forall s . RawAlgorithm (AlgorithmOf o) s) -> IO (OrderRep o)
 newOrderRep rawAlg = do
     rawOrder <- stToIO $ Raw.newOrder rawAlg
     gate <- newGate rawOrder
     return (OrderRep rawAlg gate)
 
-emptyOrderRep :: (forall s . RawAlgorithm o s) -> OrderRep o
-emptyOrderRep rawAlg = unsafePerformIO $ newOrderRep rawAlg
+localOrderRep :: (forall s . RawAlgorithm a s) -> OrderRep (Local a)
+localOrderRep rawAlg = unsafePerformIO $ newOrderRep rawAlg
 {-FIXME:
     Introduce the safety measures for unsafePerformIO. It should not matter how
     many times the I/O is performed, as emptyOrderRep is only used in the OrderT
@@ -62,9 +81,9 @@ emptyOrderRep rawAlg = unsafePerformIO $ newOrderRep rawAlg
 
 -- * Elements
 
-data Element o = Element (RawAlgorithm o RealWorld)
-                         (Gate o)
-                         (RawElement o RealWorld)
+data Element o = Element (RawAlgorithm (AlgorithmOf o) RealWorld)
+                         (Gate (AlgorithmOf o))
+                         (RawElement (AlgorithmOf o) RealWorld)
 {-NOTE:
     When using OrderT, evaluation of the Element constructor triggers the I/O
     for insertions.
@@ -102,10 +121,10 @@ newAfter = fromRawNeighbor Raw.newAfter
 newBefore :: Element o -> OrderRep o -> IO (Element o)
 newBefore = fromRawNeighbor Raw.newBefore
 
-fromRawNeighbor :: (RawAlgorithm o RealWorld
-                        -> RawOrder o RealWorld
-                        -> RawElement o RealWorld
-                        -> ST RealWorld (RawElement o RealWorld))
+fromRawNeighbor :: (RawAlgorithm (AlgorithmOf o) RealWorld
+                        -> RawOrder (AlgorithmOf o) RealWorld
+                        -> RawElement (AlgorithmOf o) RealWorld
+                        -> ST RealWorld (RawElement (AlgorithmOf o) RealWorld))
                 -> Element o
                 -> OrderRep o
                 -> IO (Element o)
@@ -113,9 +132,9 @@ fromRawNeighbor rawNewNeighbor (Element _ _ rawElem) = fromRawNew rawNew where
 
     rawNew rawAlg rawOrder = rawNewNeighbor rawAlg rawOrder rawElem
 
-fromRawNew :: (RawAlgorithm o RealWorld
-                   -> RawOrder o RealWorld
-                   -> ST RealWorld (RawElement o RealWorld))
+fromRawNew :: (RawAlgorithm (AlgorithmOf o) RealWorld
+                   -> RawOrder (AlgorithmOf o) RealWorld
+                   -> ST RealWorld (RawElement (AlgorithmOf o) RealWorld))
            -> OrderRep o
            -> IO (Element o)
 fromRawNew rawNew (OrderRep rawAlg gate) = withRawOrder gate $ \ rawOrder -> do

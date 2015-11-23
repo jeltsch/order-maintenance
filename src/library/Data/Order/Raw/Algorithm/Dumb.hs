@@ -1,6 +1,7 @@
-module Data.Order.Algorithm.Dumb (
+module Data.Order.Raw.Algorithm.Dumb (
 
-    algorithm
+    Algorithm,
+    rawAlgorithm
 
 ) where
 
@@ -15,23 +16,19 @@ import           Data.Ratio
 import           Data.STRef
 import qualified Data.Set as Set
 import           Data.Set (Set)
-import           Data.Order.Algorithm.Type
 import           Data.Order.Raw
 
-algorithm :: Algorithm
-algorithm = Algorithm rawAlgorithm
+data Algorithm
 
-data Dumb
+type instance OrderCell Algorithm s = PureOrder
 
-type instance OrderCell Dumb s = PureOrder
-
-type instance ElementCell Dumb s = PureElement
+type instance ElementCell Algorithm s = PureElement
 
 type PureOrder = Set PureElement
 
 type PureElement = Rational
 
-rawAlgorithm :: RawAlgorithm Dumb s
+rawAlgorithm :: RawAlgorithm Algorithm s
 rawAlgorithm = RawAlgorithm {
     newOrder        = newSTRef Set.empty,
     compareElements = \ _ rawElem1 rawElem2 -> do
@@ -45,7 +42,7 @@ rawAlgorithm = RawAlgorithm {
     delete          = relative fromPure pureDelete
 }
 
-fromPure :: (PureOrder -> (a, PureOrder)) -> RawOrder Dumb s -> ST s a
+fromPure :: (PureOrder -> (a, PureOrder)) -> RawOrder Algorithm s -> ST s a
 fromPure trans rawOrder = do
                               pureOrder <- readSTRef rawOrder
                               let (output, pureOrder') = trans pureOrder
@@ -53,8 +50,8 @@ fromPure trans rawOrder = do
                               return output
 
 fromPureInsert :: (PureOrder -> PureElement)
-               -> RawOrder Dumb s
-               -> ST s (RawElement Dumb s)
+               -> RawOrder Algorithm s
+               -> ST s (RawElement Algorithm s)
 fromPureInsert trans rawOrder = fromPure trans' rawOrder >>= newSTRef where
 
     trans' pureOrder = let
@@ -63,10 +60,10 @@ fromPureInsert trans rawOrder = fromPure trans' rawOrder >>= newSTRef where
 
                        in (pureElement, Set.insert pureElement pureOrder)
 
-relative :: ((PureOrder -> a) -> RawOrder Dumb s -> ST s b)
+relative :: ((PureOrder -> a) -> RawOrder Algorithm s -> ST s b)
          -> (PureOrder -> PureElement -> a)
-         -> RawOrder Dumb s
-         -> RawElement Dumb s
+         -> RawOrder Algorithm s
+         -> RawElement Algorithm s
          -> ST s b
 relative conv trans rawOrder rawElem = do
     pureElem <- readSTRef rawElem
