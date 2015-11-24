@@ -94,7 +94,6 @@ instance Eq (Element o) where
 
 instance Ord (Element o) where
 
-    {-# NOINLINE compare #-}
     compare (Element rawAlg gate rawElem1)
             (Element _      _    rawElem2) = unsafePerformIO $
                                              withRawOrder gate $ \ rawOrder ->
