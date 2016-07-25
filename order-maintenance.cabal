@@ -14,7 +14,7 @@ Synopsis:      Algorithms for the order maintenance problem with a safe
                interface
 Description:   This package is about order maintenance.
 Category:      Data
-Tested-With:   GHC == 7.8.3
+Tested-With:   GHC == 8.0.1
 
 Source-Repository head
 
@@ -31,7 +31,7 @@ Library
 
     Build-Depends: base         >= 3.0 && < 5,
                    containers   >= 0.5 && < 0.6,
-                   transformers >= 0.3 && < 0.5
+                   transformers >= 0.3 && < 0.6
 
     Default-Language: Haskell2010
 
@@ -68,7 +68,7 @@ Test-Suite tests
                    cabal-test-quickcheck >= 0.1  && < 0.2,
                    containers            >= 0.5  && < 0.6,
                    QuickCheck            >= 2.6  && < 3,
-                   transformers          >= 0.3  && < 0.5,
+                   transformers          >= 0.3  && < 0.6,
                    order-maintenance     == 0.1.1.0
 
     Default-Language: Haskell2010
