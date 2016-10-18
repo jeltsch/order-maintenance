@@ -101,11 +101,11 @@ data OrderStmt = NewMinimum
                | Delete Int
 
 newElemCount :: OrderStmt -> Int
-newElemCount NewMinimum     = 1
-newElemCount NewMaximum     = 1
-newElemCount (NewAfter id)  = 1
-newElemCount (NewBefore id) = 1
-newElemCount (Delete id)    = 0
+newElemCount NewMinimum    = 1
+newElemCount NewMaximum    = 1
+newElemCount (NewAfter _)  = 1
+newElemCount (NewBefore _) = 1
+newElemCount (Delete _)    = 0
 
 showStmt :: OrderStmt -> Int -> String
 showStmt NewMinimum     = showNewStmt "newMinimum"
