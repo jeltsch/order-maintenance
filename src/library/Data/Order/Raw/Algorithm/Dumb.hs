@@ -31,7 +31,7 @@ type PureElement = Rational
 rawAlgorithm :: RawAlgorithm Algorithm s
 rawAlgorithm = RawAlgorithm {
     newOrder        = newSTRef Set.empty,
-    compareElements = \ _ rawElem1 rawElem2 -> do
+    compareElements = \ rawElem1 rawElem2 _ -> do
                           pureElem1 <- readSTRef rawElem1
                           pureElem2 <- readSTRef rawElem2
                           return (compare pureElem1 pureElem2),
@@ -61,13 +61,13 @@ fromPureInsert trans rawOrder = fromPure trans' rawOrder >>= newSTRef where
                        in (pureElement, Set.insert pureElement pureOrder)
 
 relative :: ((PureOrder -> a) -> RawOrder Algorithm s -> ST s b)
-         -> (PureOrder -> PureElement -> a)
-         -> RawOrder Algorithm s
+         -> (PureElement -> PureOrder -> a)
          -> RawElement Algorithm s
+         -> RawOrder Algorithm s
          -> ST s b
-relative conv trans rawOrder rawElem = do
+relative conv trans rawElem rawOrder = do
     pureElem <- readSTRef rawElem
-    conv (flip trans pureElem) rawOrder
+    conv (trans pureElem) rawOrder
 
 pureInsertMinimum :: PureOrder -> PureElement
 pureInsertMinimum pureOrder
@@ -79,21 +79,21 @@ pureInsertMaximum pureOrder
     | Set.null pureOrder = 1 % 2
     | otherwise          = (Set.findMax pureOrder + 1) / 2
 
-pureInsertAfter :: PureOrder -> PureElement -> PureElement
-pureInsertAfter pureOrder pureElement = pureElement' where
+pureInsertAfter :: PureElement -> PureOrder -> PureElement
+pureInsertAfter pureElement pureOrder = pureElement' where
 
     greater = snd (Set.split pureElement pureOrder)
 
     pureElement' | Set.null greater = (pureElement + 1) / 2
                  | otherwise        = (pureElement + Set.findMin greater) / 2
 
-pureInsertBefore :: PureOrder -> PureElement -> PureElement
-pureInsertBefore pureOrder pureElement = pureElement' where
+pureInsertBefore :: PureElement -> PureOrder -> PureElement
+pureInsertBefore pureElement pureOrder = pureElement' where
 
     lesser = fst (Set.split pureElement pureOrder)
 
     pureElement' | Set.null lesser = pureElement / 2
                  | otherwise       = (pureElement + Set.findMax lesser) / 2
 
-pureDelete :: PureOrder -> PureElement -> ((), PureOrder)
-pureDelete pureOrder pureElement = ((), Set.delete pureElement pureOrder)
+pureDelete :: PureElement -> PureOrder -> ((), PureOrder)
+pureDelete pureElement pureOrder = ((), Set.delete pureElement pureOrder)

@@ -62,7 +62,7 @@ rawAlgorithmWithSize size
                                    next  = ref,
                                    prev  = ref
                                 },
-              compareElements = \ baseRef ref1 ref2 -> do
+              compareElements = \ ref1 ref2 baseRef -> do
                                     baseCell <- readSTRef baseRef
                                     cell1 <- readSTRef ref1
                                     cell2 <- readSTRef ref2
@@ -73,9 +73,9 @@ rawAlgorithmWithSize size
                                     return $ compare offset1 offset2,
               newMinimum      = newAfterCell,
               newMaximum      = newBeforeCell,
-              newAfter        = const newAfterCell,
-              newBefore       = const newBeforeCell,
-              delete          = \ _ ref -> do
+              newAfter        = const . newAfterCell,
+              newBefore       = const . newBeforeCell,
+              delete          = \ ref _ -> do
                                     cell <- readSTRef ref
                                     modifySTRef
                                         (prev cell)

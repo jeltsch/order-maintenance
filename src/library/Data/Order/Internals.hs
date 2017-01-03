@@ -99,9 +99,9 @@ instance Ord (Element o) where
                                              withRawOrder gate $ \ rawOrder ->
                                              stToIO $
                                              compareElements rawAlg
-                                                             rawOrder
                                                              rawElem1
                                                              rawElem2
+                                                             rawOrder
 
 newMinimum :: OrderRep o -> IO (Element o)
 newMinimum = fromRawNew Raw.newMinimum
@@ -116,15 +116,15 @@ newBefore :: Element o -> OrderRep o -> IO (Element o)
 newBefore = fromRawNeighbor Raw.newBefore
 
 fromRawNeighbor :: (RawAlgorithm (AlgorithmOf o) RealWorld
-                        -> RawOrder (AlgorithmOf o) RealWorld
                         -> RawElement (AlgorithmOf o) RealWorld
+                        -> RawOrder (AlgorithmOf o) RealWorld
                         -> ST RealWorld (RawElement (AlgorithmOf o) RealWorld))
                 -> Element o
                 -> OrderRep o
                 -> IO (Element o)
 fromRawNeighbor rawNewNeighbor (Element _ _ rawElem) = fromRawNew rawNew where
 
-    rawNew rawAlg rawOrder = rawNewNeighbor rawAlg rawOrder rawElem
+    rawNew rawAlg = rawNewNeighbor rawAlg rawElem
 
 fromRawNew :: (RawAlgorithm (AlgorithmOf o) RealWorld
                    -> RawOrder (AlgorithmOf o) RealWorld
@@ -136,7 +136,7 @@ fromRawNew rawNew (OrderRep rawAlg gate) = withRawOrder gate $ \ rawOrder -> do
     mkWeakIORef (IORef rawElem)
                 (withRawOrder gate $ \ rawOrder ->
                  stToIO $
-                 delete rawAlg rawOrder rawElem)
+                 delete rawAlg rawElem rawOrder)
     return (Element rawAlg gate rawElem)
 
 -- * Gates

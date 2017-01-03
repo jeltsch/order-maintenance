@@ -30,15 +30,15 @@ type family ElementCell a s
 
 data RawAlgorithm a s = RawAlgorithm {
     newOrder        :: ST s (RawOrder a s),
-    compareElements :: RawOrder a s
+    compareElements :: RawElement a s
                     -> RawElement a s
-                    -> RawElement a s
+                    -> RawOrder a s
                     -> ST s Ordering,
     newMinimum      :: RawOrder a s -> ST s (RawElement a s),
     newMaximum      :: RawOrder a s -> ST s (RawElement a s),
-    newAfter        :: RawOrder a s -> RawElement a s -> ST s (RawElement a s),
-    newBefore       :: RawOrder a s -> RawElement a s -> ST s (RawElement a s),
-    delete          :: RawOrder a s -> RawElement a s -> ST s ()
+    newAfter        :: RawElement a s -> RawOrder a s -> ST s (RawElement a s),
+    newBefore       :: RawElement a s -> RawOrder a s -> ST s (RawElement a s),
+    delete          :: RawElement a s -> RawOrder a s -> ST s ()
 }
 {-FIXME:
     If we ever allow users to plug in their own algorithms, we have to flag the
