@@ -42,10 +42,6 @@ import           Data.Order.Raw (RawAlgorithm)
 import System.IO.Unsafe
 
 {-FIXME:
-    Introduce conversions between the lazy and the strict variant, similar to
-    the conversions for ST.
--}
-{-FIXME:
     Consider introducing a restricted variant of mapStateT (for the lazy and the
     strict OrderT monad):
 
