@@ -1,13 +1,13 @@
 module Data.Order.Algorithm (
 
-    -- * General things
+    -- * Algorithms in general
 
     Algorithm,
-    defaultAlgorithm,
     withRawAlgorithm,
 
     -- * Specific algorithms
 
+    defaultAlgorithm,
     dumb,
     dietzSleatorAmortizedLog,
     dietzSleatorAmortizedLogWithSize
@@ -21,12 +21,13 @@ import Control.Monad.ST
 -- Data
 
 import           Data.Order.Algorithm.Type
-import           Data.Order.Raw
-import           Data.Order.Raw.Algorithm
-import qualified Data.Order.Raw.Algorithm.Dumb
-                 as Dumb
-import qualified Data.Order.Raw.Algorithm.DietzSleatorAmortizedLog
-                 as DietzSleatorAmortizedLog
+import           Data.Order.Algorithm.Raw
+import qualified Data.Order.Algorithm.Raw.Default
+                     as Default
+import qualified Data.Order.Algorithm.Raw.Dumb
+                     as Dumb
+import qualified Data.Order.Algorithm.Raw.DietzSleatorAmortizedLog
+                     as DietzSleatorAmortizedLog
 
 {-FIXME:
     Implement the following:
@@ -84,19 +85,19 @@ import qualified Data.Order.Raw.Algorithm.DietzSleatorAmortizedLog
         of 2^64 elements.
 -}
 
--- * General things
+-- * Algorithms in general
 
 -- NOTE: Algorithm is imported from Data.OrderMaintenance.Algorithm.Type.
 
-defaultAlgorithm :: Algorithm
-defaultAlgorithm = Algorithm defaultRawAlgorithm
-
 withRawAlgorithm :: Algorithm
-                 -> (forall a . RawAlgorithm a s -> ST s r)
-                 -> ST s r
+                 -> (forall o e . (forall s . RawAlgorithm s o e) -> r)
+                 -> r
 withRawAlgorithm (Algorithm rawAlg) cont = cont rawAlg
 
 -- * Specific algorithms
+
+defaultAlgorithm :: Algorithm
+defaultAlgorithm = Algorithm Default.rawAlgorithm
 
 dumb :: Algorithm
 dumb = Algorithm Dumb.rawAlgorithm

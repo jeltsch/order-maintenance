@@ -3,17 +3,15 @@ module Control.Monad.Trans.Order.Lazy (
     -- * The Order monad
 
     Order,
-    evalOrder,
-    evalOrderWith,
+    perform,
 
     -- * The OrderT monad transformer
 
     OrderT,
-    evalOrderT,
-    evalOrderTWith,
-    force,
+    performT,
+    getOrderToken,
 
-    -- * Elements
+    -- * Element creation
 
     newMinimum,
     newMaximum,
@@ -24,26 +22,18 @@ module Control.Monad.Trans.Order.Lazy (
 
 -- Control
 
-import Control.Monad.Trans.State.Lazy
-import Control.Monad.Trans.Order.Lazy.Type
+import           Control.Applicative
+import           Control.Monad.Trans.Order.Lazy.Type
+import qualified Control.Monad.Trans.Order.Representation as OrderTRep
 
 -- Data
 
-import           Data.Functor.Identity
-import           Data.Order.Algorithm
-import           Data.Order.Algorithm.Type
-import           Data.Order.Internals
-                 hiding (newMinimum, newMaximum, newAfter, newBefore)
-import qualified Data.Order.Internals as Internals
-import           Data.Order.Raw (RawAlgorithm)
-
--- System
-
-import System.IO.Unsafe
+import Data.Functor.Identity
+import Data.Order.Pair.Type
+import Data.Order.Element
 
 {-FIXME:
-    Consider introducing a restricted variant of mapStateT (for the lazy and the
-    strict OrderT monad):
+    Consider introducing a restricted variant of mapStateT:
 
             mapOrderT :: (forall a . m a -> n a) -> OrderT o m a -> OrderT o n a
 
@@ -52,54 +42,41 @@ import System.IO.Unsafe
 -}
 {-FIXME:
     Probably we should also have variants of liftCallCC, etc., which are present
-    for StateT (for the lazy and the strict OrderT monad).
+    for StateT.
 -}
 
 -- * The Order monad
 
 type Order o = OrderT o Identity
 
-evalOrder :: (forall o . Order o a) -> a
-evalOrder order = runIdentity (evalOrderT order)
-
-evalOrderWith :: Algorithm -> (forall o . Order o a) -> a
-evalOrderWith alg order = runIdentity (evalOrderTWith alg order)
+perform :: (a -> Order o b) -> OrderPair o a -> OrderPair o b
+perform fun pair = runIdentity (performT fun pair)
 
 -- * The OrderT monad transformer
 
--- NOTE: OrderT is imported from Control.Monad.Trans.Order.Lazy.Type.
+-- NOTE: OrderT is imported from Control.Trans.Order.Lazy.Type.
 
-evalOrderT :: Monad m => (forall o . OrderT o m a) -> m a
-evalOrderT = evalOrderTWith defaultAlgorithm
+performT :: Functor f
+         => (a -> OrderT o f b)
+         -> OrderPair o a
+         -> f (OrderPair o b)
+performT fun (OrderPair ~(val, orderRep)) = output where
 
-evalOrderTWith :: Monad m => Algorithm -> (forall o . OrderT o m a) -> m a
-evalOrderTWith (Algorithm rawAlg) (OrderT stateT) = monad where
+    output = OrderTRep.performT (runOrderT . fun) val orderRep
 
-    monad = evalStateT stateT (localOrderRep rawAlg)
+getOrderToken :: Applicative f => OrderT o f ()
+getOrderToken = OrderT $ OrderTRep.getOrderToken
 
-force :: Monad m => OrderT o m ()
-force = OrderT $ get >>= \ order -> order `seq` return ()
+-- * Element creation
 
--- * Elements
+newMinimum :: Applicative f => OrderT o f (Element o)
+newMinimum = OrderT $ OrderTRep.newMinimum
 
-newMinimum :: Monad m => OrderT o m (Element o)
-newMinimum = fromRepNew Internals.newMinimum
+newMaximum :: Applicative f => OrderT o f (Element o)
+newMaximum = OrderT $ OrderTRep.newMaximum
 
-newMaximum :: Monad m => OrderT o m (Element o)
-newMaximum = fromRepNew Internals.newMaximum
+newAfter :: Applicative f => Element o -> OrderT o f (Element o)
+newAfter elem = OrderT $ OrderTRep.newAfter elem
 
-newAfter :: Monad m => Element o -> OrderT o m (Element o)
-newAfter elem = fromRepNew (Internals.newAfter elem)
-
-newBefore :: Monad m => Element o -> OrderT o m (Element o)
-newBefore elem = fromRepNew (Internals.newBefore elem)
-
-fromRepNew :: Monad m
-           => (OrderRep o -> IO (Element o))
-           -> OrderT o m (Element o)
-fromRepNew repNew = OrderT $ state statefulNew where
-
-    statefulNew orderRep = (elem, elem `seq` orderRep) where
-
-        {-# NOINLINE elem #-}
-        elem = unsafePerformIO $ repNew orderRep
+newBefore :: Applicative f => Element o -> OrderT o f (Element o)
+newBefore elem = OrderT $ OrderTRep.newBefore elem

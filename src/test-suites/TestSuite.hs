@@ -19,7 +19,7 @@ import           Data.Map (Map)
 import qualified Data.Map as Map
 import           Data.Order.Algorithm (Algorithm, withRawAlgorithm)
 import qualified Data.Order.Algorithm as Algorithm
-import           Data.Order.Raw
+import           Data.Order.Algorithm.Raw
 
 -- Test
 
@@ -75,13 +75,13 @@ type ComparisonMatrix = Map (Int, Int) Ordering
 runComp :: Algorithm -> OrderComp -> ComparisonMatrix
 runComp alg comp = compMatrix where
 
-    compMatrix = runST (withRawAlgorithm alg (\ rawAlg -> execComp rawAlg comp))
+    compMatrix = withRawAlgorithm alg (\ rawAlg -> runST $ execComp rawAlg comp)
 
-data CompExecState a s = CompExecState (ElementMap a s) Int
+data CompExecState s e = CompExecState (ElementMap s e) Int
 
-type ElementMap a s = Map Int (RawElement a s)
+type ElementMap s e = Map Int (RawElement s e)
 
-execComp :: RawAlgorithm a s -> OrderComp -> ST s ComparisonMatrix
+execComp :: RawAlgorithm s o e -> OrderComp -> ST s ComparisonMatrix
 execComp rawAlg (OrderComp stmts) = do
     rawOrder <- newOrder rawAlg
     let execStmts = mapM_ (execStmt rawAlg rawOrder) stmts
@@ -130,9 +130,9 @@ genStmt = do
                 else frequency [
                          (1, return NewMinimum),
                          (1, return NewMaximum),
-                         (3, fmap NewAfter liveIdGen),
-                         (3, fmap NewBefore liveIdGen),
-                         (2, fmap Delete liveIdGen)
+                         (3, NewAfter <$> liveIdGen),
+                         (3, NewBefore <$> liveIdGen),
+                         (2, Delete <$> liveIdGen)
                      ]
     let newStmtIds = (Set.singleton nextId, Set.empty)
     let (newIds, deadIds) = case stmt of
@@ -145,10 +145,10 @@ genStmt = do
                        (nextId + Set.size newIds)
     return stmt
 
-execStmt :: RawAlgorithm a s
-         -> RawOrder a s
+execStmt :: RawAlgorithm s o e
+         -> RawOrder s o
          -> OrderStmt
-         -> StateT (CompExecState a s) (ST s) ()
+         -> StateT (CompExecState s e) (ST s) ()
 execStmt rawAlg rawOrder = exec where
 
     exec NewMinimum     = execNew newMinimum

@@ -29,33 +29,39 @@ Source-Repository this
 
 Library
 
-    Build-Depends: base         >= 3.0 && < 5,
+    Build-Depends: base         >= 4.8 && < 5,
                    containers   >= 0.5 && < 0.6,
                    transformers >= 0.3 && < 0.6
 
     Default-Language: Haskell2010
 
-    Default-Extensions: EmptyDataDecls
-                        ExistentialQuantification
-                        FlexibleContexts
+    Default-Extensions: ExistentialQuantification
                         GeneralizedNewtypeDeriving
-                        RankNTypes
-                        TypeFamilies
+                        KindSignatures
+                        Rank2Types
 
     Exposed-Modules: Control.Monad.Trans.Order
                      Control.Monad.Trans.Order.Lazy
                      Control.Monad.Trans.Order.Strict
-                     Data.Order
+                     Data.Order.Pair
+                     Data.Order.Element
+                     Data.Order.Element.IO
                      Data.Order.Algorithm
-                     Data.Order.Raw
+                     Data.Order.Algorithm.Raw
                      System.IO.Order
 
     Other-Modules: Control.Monad.Trans.Order.Lazy.Type
+                   Control.Monad.Trans.Order.Representation
+                   Data.Order.Pair.Type
+                   Data.Order.Element.Type
+                   Data.Order.Element.IO.Type
+                   Data.Order.Representation
+                   Data.Order.Element.Representation
+                   Data.Order.Gate
                    Data.Order.Algorithm.Type
-                   Data.Order.Internals
-                   Data.Order.Raw.Algorithm
-                   Data.Order.Raw.Algorithm.DietzSleatorAmortizedLog
-                   Data.Order.Raw.Algorithm.Dumb
+                   Data.Order.Algorithm.Raw.Default
+                   Data.Order.Algorithm.Raw.Dumb
+                   Data.Order.Algorithm.Raw.DietzSleatorAmortizedLog
 
     HS-Source-Dirs: src/library
 
