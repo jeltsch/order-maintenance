@@ -139,13 +139,13 @@ rawAlgorithmWithSize size
         (delimRef, gapSum, gapCount) <- delimSearch (next startCell) 1
         let smallGap = gapSum `div` gapCount
         let largeGapCount = gapSum `mod` gapCount
-        let changeLabels ref idx = when (ref /= delimRef) $ do
+        let changeLabels ref ix = when (ref /= delimRef) $ do
                 cell <- readSTRef ref
                 let lbl = labelSum
                               (label startCell)
-                              (Label (idx * smallGap + min largeGapCount idx))
+                              (Label (ix * smallGap + min largeGapCount ix))
                 writeSTRef ref (cell { label = lbl })
-                changeLabels (next cell) (succ idx)
+                changeLabels (next cell) (succ ix)
         changeLabels (next startCell) 1
     {-FIXME:
         We allow the number of cells to be larger than the square root of the
