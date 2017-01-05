@@ -51,7 +51,7 @@ defaultSize = 63
 rawAlgorithmWithSize :: Int -> RawAlgorithm s OrderCell ElementCell
 rawAlgorithmWithSize size
     | size < 0 || size >= labelWordSize
-        = error "Control.Monad.Trans.Order.Algorithm.DietzSleatorAmortizedLog: \
+        = error "Data.Order.Algorithm.dietzSleatorAmortizedLogWithSize: \
                 \Size out of bounds"
     | otherwise
         = RawAlgorithm {
@@ -131,8 +131,8 @@ rawAlgorithmWithSize size
                 let gapSum = labelDistance (label cell) (label startCell)
                 if gapSum <= gapCount ^ 2
                     then if ref == startRef
-                             then error "Control.Monad.Trans.Order.Algorithm.\
-                                        \DietzSleatorAmortizedLog: \
+                             then error "Data.Order.Algorithm.\
+                                        \dietzSleatorAmortizedLogWithSize: \
                                         \Order full"
                              else delimSearch (next cell) (succ gapCount)
                     else return (ref, gapSum, gapCount)
