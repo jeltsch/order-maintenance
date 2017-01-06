@@ -1,9 +1,9 @@
 module Data.Order.Pair (
 
     OrderPair,
-    empty,
-    emptyBy,
-    companion
+    emptyOrderPair,
+    emptyOrderPairUsing,
+    withoutOrder
 
 ) where
 
@@ -25,15 +25,17 @@ import System.IO.Unsafe
 
 -- NOTE: OrderPair is imported from Data.Order.Pair.Type.
 
-empty :: OrderPair o ()
-empty = emptyBy defaultAlgorithm
+emptyOrderPair :: a -> OrderPair o a
+emptyOrderPair = emptyOrderPairUsing defaultAlgorithm
 
-emptyBy :: Algorithm -> OrderPair o ()
-emptyBy (Algorithm rawAlg) = OrderPair ((), emptyOrderRepBy rawAlg)
+emptyOrderPairUsing :: Algorithm -> a -> OrderPair o a
+emptyOrderPairUsing (Algorithm rawAlg) val = orderPair where
 
-{-# NOINLINE emptyOrderRepBy #-}
-emptyOrderRepBy :: RawAlgorithm RealWorld o e -> OrderRep o e
-emptyOrderRepBy rawAlg = unsafePerformIO $ newOrderRep rawAlg
+    orderPair = OrderPair (val, emptyOrderRepUsing rawAlg)
 
-companion :: (forall o . OrderPair o a) -> a
-companion (OrderPair (comp, _)) = comp
+{-# NOINLINE emptyOrderRepUsing #-}
+emptyOrderRepUsing :: RawAlgorithm RealWorld o e -> OrderRep o e
+emptyOrderRepUsing rawAlg = unsafePerformIO $ newOrderRep rawAlg
+
+withoutOrder :: (forall o . OrderPair o a) -> a
+withoutOrder (OrderPair (comp, _)) = comp
