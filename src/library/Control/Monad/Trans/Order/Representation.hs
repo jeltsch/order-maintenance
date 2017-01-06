@@ -5,6 +5,7 @@ module Control.Monad.Trans.Order.Representation (
     OrderTRep (OrderTRep),
     performT,
     getOrderToken,
+    lift,
 
     -- * Element creation
 
@@ -22,11 +23,12 @@ module Control.Monad.Trans.Order.Representation (
 
 -- Control
 
-import Control.Applicative
-import Control.Monad
-import Control.Monad.Fix
-import Control.Monad.Trans.Class
-import Control.Monad.IO.Class
+import           Control.Applicative
+import           Control.Monad
+import           Control.Monad.Fix
+import           Control.Monad.Trans.Class (MonadTrans)
+import qualified Control.Monad.Trans.Class (lift)
+import           Control.Monad.IO.Class
 
 -- Data
 
@@ -130,6 +132,13 @@ performT fun val orderRep = OrderPair <$> struct where
 
 getOrderToken :: (StateMonadTrans t, Applicative f) => OrderTRep t o f ()
 getOrderToken = OrderTRep $ state $ \ orderRep -> (orderRep `seq` (), orderRep)
+
+lift :: (StateMonadTrans t, Functor f) => f a -> OrderTRep t o f a
+lift struct = OrderTRep $ stateT $ \ orderRep -> (, orderRep) <$> struct
+{-NOTE:
+    This version is more general than the one from MonadTrans, since it works
+    with arbitrary functors, not just monads.
+-}
 
 -- * Element creation
 

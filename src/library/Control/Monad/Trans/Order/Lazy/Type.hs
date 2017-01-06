@@ -10,7 +10,7 @@ import           Control.Monad.Fix
 import           Control.Monad.Trans.Class
 import           Control.Monad.IO.Class
 import qualified Control.Monad.Trans.State.Lazy as Lazy
-import           Control.Monad.Trans.Order.Representation
+import           Control.Monad.Trans.Order.Representation hiding (lift)
 
 newtype OrderT o m a = OrderT {
             runOrderT :: OrderTRep Lazy.StateT o m a

@@ -30,7 +30,8 @@ module Control.Monad.Trans.Order.Strict (
 import           Control.Applicative
 import           Control.Monad
 import           Control.Monad.Fix
-import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Class (MonadTrans)
+import qualified Control.Monad.Trans.Class as Trans (lift)
 import           Control.Monad.IO.Class
 import qualified Control.Monad.Trans.State.Strict as Strict
 import           Control.Monad.Trans.Order.Representation
@@ -135,7 +136,7 @@ instance StateMonadTrans Strict.StateT where
 
     -- MonadTrans
 
-    lift' = lift
+    lift' = Trans.lift
 
     -- MonadIO
 
@@ -151,6 +152,13 @@ performT fun (OrderPair (val, orderRep)) = output where
 
 getOrderToken :: Applicative f => OrderT o f ()
 getOrderToken = OrderT $ OrderTRep.getOrderToken
+
+lift :: Functor f => f a -> OrderT o f a
+lift struct = OrderT $ OrderTRep.lift struct
+{-NOTE:
+    This version is more general than the one from MonadTrans, since it works
+    with arbitrary functors, not just monads.
+-}
 
 -- * Element creation
 

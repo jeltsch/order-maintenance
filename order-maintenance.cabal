@@ -39,6 +39,7 @@ Library
                         GeneralizedNewtypeDeriving
                         KindSignatures
                         Rank2Types
+                        TupleSections
 
     Exposed-Modules: Control.Monad.Trans.Order
                      Control.Monad.Trans.Order.Lazy

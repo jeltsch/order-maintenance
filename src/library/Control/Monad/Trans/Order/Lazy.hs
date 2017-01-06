@@ -10,6 +10,7 @@ module Control.Monad.Trans.Order.Lazy (
     OrderT,
     performT,
     getOrderToken,
+    lift,
 
     -- * Element creation
 
@@ -66,6 +67,13 @@ performT fun (OrderPair ~(val, orderRep)) = output where
 
 getOrderToken :: Applicative f => OrderT o f ()
 getOrderToken = OrderT $ OrderTRep.getOrderToken
+
+lift :: Functor f => f a -> OrderT o f a
+lift struct = OrderT $ OrderTRep.lift struct
+{-NOTE:
+    This version is more general than the one from MonadTrans, since it works
+    with arbitrary functors, not just monads.
+-}
 
 -- * Element creation
 
