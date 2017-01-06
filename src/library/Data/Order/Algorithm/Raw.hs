@@ -39,9 +39,5 @@ data RawAlgorithm s o e = RawAlgorithm {
 {-FIXME:
     If we ever allow users to plug in their own algorithms, we have to flag the
     respective function as unsafe and point out that referential transparency is
-    in danger if the algorithm does not fulfill the specification. This is
-    because element comparison is presented to the user as a pure function. The
-    important condition is that for any two elements, compareElements must
-    always return the same result as long as delete is not called on either
-    element.
+    in danger if the algorithm does not fulfill the specification.
 -}
