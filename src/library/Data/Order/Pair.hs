@@ -38,4 +38,4 @@ emptyOrderRepUsing :: RawAlgorithm RealWorld o e -> OrderRep o e
 emptyOrderRepUsing rawAlg = unsafePerformIO $ newOrderRep rawAlg
 
 withoutOrder :: (forall o . OrderPair o a) -> a
-withoutOrder (OrderPair (comp, _)) = comp
+withoutOrder (OrderPair (val, _)) = val
